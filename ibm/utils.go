@@ -36,13 +36,11 @@ func configApiKey(_ context.Context, d *plugin.QueryData) (string, error) {
 
 	// Then, use config
 	ibmConfig := GetConfig(d.Connection)
-	if &ibmConfig != nil {
-		if ibmConfig.APIKey != nil {
-			apiKey = *ibmConfig.APIKey
-		}
-		if apiKey != "" {
-			return apiKey, nil
-		}
+	if ibmConfig.APIKey != nil {
+		apiKey = *ibmConfig.APIKey
+	}
+	if apiKey != "" {
+		return apiKey, nil
 	}
 
 	// No key, cannot proceed

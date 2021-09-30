@@ -25,7 +25,7 @@ select
   status,
   region
 from
-  ibm_is_vpc
+  ibm_is_vpc;
 ```
 
 ```
@@ -53,7 +53,13 @@ steampipe plugin install ibm
 
 ### Credentials
 
-TODO
+| Item | Description |
+| - | - |
+| Credentials | [Create an API key](https://cloud.ibm.com/docs/account?topic=account-userapikey&interface=ui#manage-user-keys) from [IBM Cloud console](https://cloud.ibm.com/iam/apikeys). |
+| Permissions | <ol><li>`Viewer` access for `All Account Management Services`</li><li>`Viewer` access for `All Identity and Access enabled services`</li></ol>|
+| Radius | Each connection represents a single IBM cloud account. |
+| Resolution | 1. `api_key` in steampipe config.<br />2. `IC_API_KEY` environment variable.<br />3. `IBMCLOUD_API_KEY` environment variable. |
+| Region Resolution | 1. Regions set for the connection via the regions argument in the config file (~/.steampipe/config/ibm.spc).<br />2. The region specified in the `IC_REGION` or `IBMCLOUD_REGION` environment variable.|
 
 ### Configuration
 
@@ -62,13 +68,68 @@ Installing the latest ibm plugin will create a config file (`~/.steampipe/config
 ```hcl
 connection "ibm" {
   plugin  = "ibm"
-  api_key = "0hrqaLNt-Nc831AW5k7z10CcwOGk_ttqTpOSWYJ2rnwi"
+
+  # You may connect to one or more regions. If `regions` is not specified, 
+  # Steampipe will use a single default region using:
+  # The `IC_REGION` or `IBMCLOUD_REGION` environment variable
+  # regions     = ["us-south", "eu-de"]
+  
+  # API Key from IBM Cloud
+  # api_key = "0hrqaLNt-Nc831AW5k7z10CcwOGk_ttqTpOSWYJ2rnwi"
 }
 ```
-
-- `api_key` - API Key from IBM Cloud.
 
 ## Get involved
 
 - Open source: https://github.com/turbot/steampipe-plugin-ibm
 - Community: [Slack Channel](https://join.slack.com/t/steampipe/shared_invite/zt-oij778tv-lYyRTWOTMQYBVAbtPSWs3g)
+
+## Multi-Region Connections
+
+You may also specify one or more regions with the `regions` argument:
+
+```hcl
+connection "ibm" {
+  plugin  = "ibm"    
+  regions = ["au-syd", "eu-de", "eu-gb", "jp-osa", "jp-tok", "us-east", "us-south"]
+}
+```
+
+The `region` argument supports wildcards:
+
+- All regions
+
+  ```hcl
+  connection "ibm" {
+    plugin  = "ibm"    
+    regions = ["*"] 
+  }
+  ```
+
+- All US and EU regions
+
+  ```hcl
+  connection "ibm" {
+    plugin    = "ibm"    
+    regions   = ["us-*", "eu-*"] 
+  }
+  ```
+
+IBM multi-region connections are common, but be aware that performance may be impacted by the number of regions and the latency to them.
+
+## Configuring IBM Credentials
+
+### Credentials from Environment Variables
+
+The IBM plugin will use the standard IBM environment variables to obtain credentials **only if other arguments (`api_key`, `regions`) are not specified** in the connection:
+
+```sh
+export IC_API_KEY=0hrqaLNt-Nc831AW5k7z10CcwOGk_ttqTpOSWYJ2rnwi
+export IBMCLOUD_API_KEY=0hrqaLNt-Nc831AW5k7z10CcwOGk_ttqTpOSWYJ2rnwi
+```
+
+```hcl
+connection "ibm" {
+  plugin = "ibm" 
+}
+```

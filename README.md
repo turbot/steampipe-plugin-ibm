@@ -26,7 +26,7 @@ select
   status,
   region
 from
-  ibm_is_vpc
+  ibm_is_vpc;
 ```
 
 ## Developing
@@ -45,20 +45,20 @@ cd steampipe-plugin-ibm
 
 Build, which automatically installs the new version to your `~/.steampipe/plugins` directory:
 
-```
+```sh
 make
 ```
 
 Configure the plugin:
 
-```
+```sh
 cp config/* ~/.steampipe/config
 vi ~/.steampipe/config/ibm.spc
 ```
 
 Try it!
 
-```
+```shell
 steampipe query
 > .inspect ibm
 ```
