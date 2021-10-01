@@ -1,4 +1,4 @@
-# Table: aws_iam_user
+# Table: ibm_iam_user
 
 An IBM Identity and Access Management (IAM) user is an entity that you create in IBM Cloud to represent the person that uses it to interact with.
 
