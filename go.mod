@@ -6,7 +6,7 @@ require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20210326111722-ed184b962226
 	github.com/IBM/go-sdk-core/v5 v5.6.5
 	github.com/IBM/platform-services-go-sdk v0.18.0
-	github.com/IBM/vpc-go-sdk v1.0.0
+	github.com/IBM/vpc-go-sdk v1.0.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-openapi/strfmt v0.20.1
 	github.com/mattn/go-runewidth v0.0.9 // indirect

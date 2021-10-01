@@ -10,6 +10,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
+//// TABLE DEFINITION
+
 func tableIbmIsSubnet(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_is_subnet",
@@ -51,19 +53,32 @@ func tableIbmIsSubnet(ctx context.Context) *plugin.Table {
 	}
 }
 
-func listIsSubnet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+//// LIST FUNCTION
 
-	conn, err := vpcService(ctx, d)
+func listIsSubnet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	region := plugin.GetMatrixItem(ctx)["region"].(string)
+
+	// Create service connection
+	conn, err := vpcService(ctx, d, region)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_is_subnet.listIsSubnet", "connection_error", err)
 		return nil, err
 	}
 
-	// Retrieve the list of vpcs for your account.
-	limit := int64(100)
+	// Retrieve the list of subnets for your account.
+	maxResult := int64(100)
 	start := ""
+
+	// Reduce the basic request limit down if the user has only requested a small number of rows
+	limit := d.QueryContext.Limit
+	if d.QueryContext.Limit != nil {
+		if *limit < maxResult {
+			maxResult = *limit
+		}
+	}
+
 	opts := &vpcv1.ListSubnetsOptions{
-		Limit: &limit,
+		Limit: &maxResult,
 	}
 
 	for {
@@ -77,6 +92,11 @@ func listIsSubnet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 		}
 		for _, i := range result.Subnets {
 			d.StreamListItem(ctx, i)
+
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 		start = GetNext(result.Next)
 		if start == "" {
@@ -87,16 +107,23 @@ func listIsSubnet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 	return nil, nil
 }
 
-func getIsSubnet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+//// HYDRATE FUNCTIONS
 
-	conn, err := vpcService(ctx, d)
+func getIsSubnet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	region := plugin.GetMatrixItem(ctx)["region"].(string)
+
+	// Create service connection
+	conn, err := vpcService(ctx, d, region)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_is_subnet.getIsSubnet", "connection_error", err)
 		return nil, err
 	}
+	id := d.KeyColumnQuals["id"].GetStringValue()
 
-	quals := d.KeyColumnQuals
-	id := quals["id"].GetStringValue()
+	// No inputs
+	if id == "" {
+		return nil, nil
+	}
 
 	// Retrieve the get of vpcs for your account.
 	opts := &vpcv1.GetSubnetOptions{

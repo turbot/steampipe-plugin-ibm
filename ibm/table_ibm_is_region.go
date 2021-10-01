@@ -10,11 +10,12 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
+//// TABLE DEFINITION
+
 func tableIbmIsRegion(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:          "ibm_is_region",
-		Description:   "IBM Cloud regions and endpoints.",
-		GetMatrixItem: BuildRegionList,
+		Name:        "ibm_is_region",
+		Description: "IBM Cloud regions and endpoints.",
 		List: &plugin.ListConfig{
 			Hydrate: listIsRegion,
 		},
@@ -29,8 +30,7 @@ func tableIbmIsRegion(ctx context.Context) *plugin.Table {
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The unique user-defined name for this region."},
 			{Name: "status", Type: proto.ColumnType_STRING, Description: "The status of this region."},
 			// Standard columns
-			// TODO - need to resolve without a CRN?
-			//{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this region."},
+			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getAccountId).WithCache(), Transform: transform.FromValue(), Description: "The account ID of this region."},
 			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: "The region of this region."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			// TODO - should be in crn: format?
@@ -40,9 +40,13 @@ func tableIbmIsRegion(ctx context.Context) *plugin.Table {
 	}
 }
 
-func listIsRegion(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+//// LIST FUNCTION
 
-	conn, err := vpcService(ctx, d)
+func listIsRegion(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	region := GetDefaultIBMRegion(d)
+
+	// Create service connection
+	conn, err := vpcService(ctx, d, region)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_is_region.listIsRegion", "connection_error", err)
 		return nil, err
@@ -58,21 +62,33 @@ func listIsRegion(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 	}
 	for _, i := range result.Regions {
 		d.StreamListItem(ctx, i)
+
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
 	}
 
 	return nil, nil
 }
 
-func getIsRegion(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+//// HYDRATE FUNCTIONS
 
-	conn, err := vpcService(ctx, d)
+func getIsRegion(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	region := GetDefaultIBMRegion(d)
+
+	// Create service connection
+	conn, err := vpcService(ctx, d, region)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_is_region.getIsRegion", "connection_error", err)
 		return nil, err
 	}
+	name := d.KeyColumnQuals["name"].GetStringValue()
 
-	quals := d.KeyColumnQuals
-	name := quals["name"].GetStringValue()
+	// No inputs
+	if name == "" {
+		return nil, nil
+	}
 
 	// Retrieve the get of vpcs for your account.
 	opts := &vpcv1.GetRegionOptions{

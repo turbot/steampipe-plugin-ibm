@@ -11,8 +11,8 @@ github.com/IBM/go-sdk-core/v5 v5.6.5 h1:zXlt5x/udqZTD617SKUQzPDON4x5y0+22vNxsdCG
 github.com/IBM/go-sdk-core/v5 v5.6.5/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3btdruJaoUeek=
 github.com/IBM/platform-services-go-sdk v0.18.0 h1:zzUpcwpn5IpAXGdV58IE0zjU0Hzz8ifnnwEJG8d3UtM=
 github.com/IBM/platform-services-go-sdk v0.18.0/go.mod h1:MSg7VY5MecPRSClxTAD9kLlSIOur4vTjpbJZW9NCMDA=
-github.com/IBM/vpc-go-sdk v1.0.0 h1:YsCFKFu/DNryaidUOpH7/Y9J0RtWZl4aP1cve/cfh2A=
-github.com/IBM/vpc-go-sdk v1.0.0/go.mod h1:bhd7r482lV30UJz46r2oRgYGawGEo+TuS41ZLIY65y0=
+github.com/IBM/vpc-go-sdk v1.0.1 h1:D2cu4KRsM8Q8bLWz/uxp8m7nzUm33mcgDv1sD0w/E8M=
+github.com/IBM/vpc-go-sdk v1.0.1/go.mod h1:bhd7r482lV30UJz46r2oRgYGawGEo+TuS41ZLIY65y0=
 github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d h1:licZJFw2RwpHMqeKTCYkitsPqHNxTmd4SNR5r94FGM8=

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/IBM-Cloud/bluemix-go"
+	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
 	"github.com/IBM-Cloud/bluemix-go/authentication"
 	"github.com/IBM-Cloud/bluemix-go/http"
 	"github.com/IBM-Cloud/bluemix-go/rest"
@@ -21,6 +22,11 @@ import (
 )
 
 func configApiKey(_ context.Context, d *plugin.QueryData) (string, error) {
+	// Load API key from cache
+	cacheKey := "ibm_api_key"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(string), nil
+	}
 
 	// First, prefer the most specific env var
 	apiKey := os.Getenv("IBMCLOUD_API_KEY")
@@ -40,6 +46,9 @@ func configApiKey(_ context.Context, d *plugin.QueryData) (string, error) {
 		apiKey = *ibmConfig.APIKey
 	}
 	if apiKey != "" {
+		// Save to cache
+		d.ConnectionManager.Cache.Set(cacheKey, apiKey)
+
 		return apiKey, nil
 	}
 
@@ -48,7 +57,6 @@ func configApiKey(_ context.Context, d *plugin.QueryData) (string, error) {
 }
 
 func connect(ctx context.Context, d *plugin.QueryData) (*session.Session, error) {
-
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm"
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
@@ -134,6 +142,55 @@ func authenticateAPIKey(sess *session.Session) error {
 		return err
 	}
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
+}
+
+// Get current user account
+func getAccountId(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	cacheKey := "IBMAccountId"
+
+	// if found in cache, return the result
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(string), nil
+	}
+
+	conn, err := connect(ctx, d)
+	if err != nil {
+		plugin.Logger(ctx).Error("getAccountId", "connection_error", err)
+		return "", err
+	}
+
+	// If API key used, fetch user account from session
+	apiKey, err := configApiKey(ctx, d)
+	if err != nil {
+		plugin.Logger(ctx).Error("getAccountId", "api_key_error", err)
+	}
+
+	if apiKey != "" {
+		userInfo, err := fetchUserDetails(conn, 2)
+		if err != nil {
+			plugin.Logger(ctx).Error("ibm_iam_user.listIamUser", "connection_error", err)
+			return nil, err
+		}
+		return userInfo.userAccount, nil
+	}
+
+	svc, err := accountv2.New(conn)
+	if err != nil {
+		plugin.Logger(ctx).Error("ibm_iam_user.listIamUser", "connection_error", err)
+		return "", err
+	}
+
+	client := svc.Accounts()
+	account, err := client.FindByOwner(conn.Config.IBMID)
+	if err != nil {
+		plugin.Logger(ctx).Error("getAccountId", "query_error", err)
+		return "", err
+	}
+
+	// save to extension cache
+	d.ConnectionManager.Cache.Set(cacheKey, account.GUID)
+
+	return account.GUID, nil
 }
 
 func resourceInterfaceDescription(key string) string {

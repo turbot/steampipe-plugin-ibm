@@ -16,18 +16,13 @@ import (
 func Regions() []string {
 	return []string{
 		"au-syd",
+		"br-sao",
+		"ca-tor",
 		"eu-de",
 		"eu-gb",
 		"jp-osa",
 		"jp-tok",
 		"us-east",
-		"us-south",
-	}
-}
-
-// DefaultRegions is the list of regions used in queries by default
-func DefaultRegions() []string {
-	return []string{
 		"us-south",
 	}
 }
@@ -191,4 +186,3 @@ func unique(stringSlice []string) []string {
 	}
 	return list
 }
-

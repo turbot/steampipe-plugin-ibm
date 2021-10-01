@@ -7,22 +7,30 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-func vpcService(ctx context.Context, d *plugin.QueryData) (*vpcv1.VpcV1, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
+// vpcService returns the service for IBM VPC Infrastructure service
+func vpcService(ctx context.Context, d *plugin.QueryData, region string) (*vpcv1.VpcV1, error) {
+	if region == "" {
+		return nil, fmt.Errorf("region must be passed vpcService")
+	}
+
+	// Create region endpoint
 	endpoint := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", region)
+
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := endpoint
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
 		return cachedData.(*vpcv1.VpcV1), nil
 	}
+
+	// Fetch API key from config
 	apiKey, err := configApiKey(ctx, d)
 	if err != nil {
 		return nil, err
 	}
+
 	// Instantiate the service with an API key based IAM authenticator
 	service, err := vpcv1.NewVpcV1(&vpcv1.VpcV1Options{
 		URL: endpoint,
@@ -33,8 +41,10 @@ func vpcService(ctx context.Context, d *plugin.QueryData) (*vpcv1.VpcV1, error) 
 	if err != nil {
 		return nil, err
 	}
+
 	// Save to cache
 	d.ConnectionManager.Cache.Set(cacheKey, service)
+
 	return service, nil
 }
 
