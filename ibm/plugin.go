@@ -18,6 +18,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		TableMap: map[string]*plugin.Table{
 			"ibm_iam_role":          tableIbmIamRole(ctx),
 			"ibm_iam_user":          tableIbmIamUser(ctx),
+			"ibm_is_network_acl":    tableIbmIsNetworkAcl(ctx),
 			"ibm_is_region":         tableIbmIsRegion(ctx),
 			"ibm_is_security_group": tableIbmIsSecurityGroup(ctx),
 			"ibm_is_subnet":         tableIbmIsSubnet(ctx),
