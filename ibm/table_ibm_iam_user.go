@@ -26,12 +26,12 @@ func tableIbmIamUser(ctx context.Context) *plugin.Table {
 			{Name: "iam_id", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the user's IAM ID."},
 			{Name: "user_id", Type: proto.ColumnType_STRING, Description: "The user ID used for login."},
 			{Name: "realm", Type: proto.ColumnType_STRING, Description: "The realm of the user. The value is either IBMid or SL."},
-			{Name: "first_name", Type: proto.ColumnType_STRING, Description: "The first name of the user."},
-			{Name: "last_name", Type: proto.ColumnType_STRING, Description: "The last name of the user."},
+			{Name: "first_name", Type: proto.ColumnType_STRING, Description: "The first name of the user.", Transform: transform.FromField("Firstname")},
+			{Name: "last_name", Type: proto.ColumnType_STRING, Description: "The last name of the user.", Transform: transform.FromField("Lastname")},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "The state of the user. Possible values are PROCESSING, PENDING, ACTIVE, DISABLED_CLASSIC_INFRASTRUCTURE, and VPN_ONLY."},
 			{Name: "email", Type: proto.ColumnType_STRING, Description: "The email of the user."},
 			{Name: "phonenumber", Type: proto.ColumnType_STRING, Description: "The phone number of the user."},
-			{Name: "alt_phonenumber", Type: proto.ColumnType_STRING, Description: "The alternative phone number of the user."},
+			{Name: "alt_phonenumber", Type: proto.ColumnType_STRING, Description: "The alternative phone number of the user.", Transform: transform.FromField("Altphonenumber")},
 			{Name: "photo", Type: proto.ColumnType_STRING, Description: "A link to a photo of the user."},
 			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the account ID."},
 			{Name: "settings", Type: proto.ColumnType_JSON, Hydrate: getIamUserSettings, Transform: transform.FromValue(), Description: "User settings."},
@@ -40,7 +40,6 @@ func tableIbmIamUser(ctx context.Context) *plugin.Table {
 }
 
 func listIamUser(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-
 	conn, err := connect(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_iam_user.listIamUser", "connection_error", err)
