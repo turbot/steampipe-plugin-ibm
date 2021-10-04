@@ -16,6 +16,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		},
 		DefaultTransform: transform.FromGo().NullIfZero(),
 		TableMap: map[string]*plugin.Table{
+			"ibm_account":           tableIbmAccount(ctx),
 			"ibm_iam_role":          tableIbmIamRole(ctx),
 			"ibm_iam_user":          tableIbmIamUser(ctx),
 			"ibm_is_region":         tableIbmIsRegion(ctx),
