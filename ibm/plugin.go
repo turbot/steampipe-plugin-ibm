@@ -18,11 +18,13 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		TableMap: map[string]*plugin.Table{
 			"ibm_account":                         tableIbmAccount(ctx),
 			"ibm_certificate_manager_certificate": tableIbmCertificateManagerCertificate(ctx),
+			"ibm_iam_access_group":                tableIbmIamAccessGroup(ctx),
 			"ibm_iam_account_settings":            tableIbmAccountSettings(ctx),
 			"ibm_iam_api_key":                     tableIbmAPIKey(ctx),
 			"ibm_iam_my_api_key":                  tableIbmMyAPIKey(ctx),
 			"ibm_iam_role":                        tableIbmIamRole(ctx),
 			"ibm_iam_user":                        tableIbmIamUser(ctx),
+			"ibm_iam_user_policy":                 tableIbmIamUserPolicy(ctx),
 			"ibm_is_instance":                     tableIbmIsInstance(ctx),
 			"ibm_is_instance_disk":                tableIbmIsInstanceDisk(ctx),
 			"ibm_is_network_acl":                  tableIbmIsNetworkAcl(ctx),
