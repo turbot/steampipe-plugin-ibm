@@ -8,6 +8,7 @@ import (
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
 func tableIbmAPIKey(ctx context.Context) *plugin.Table {
@@ -18,17 +19,17 @@ func tableIbmAPIKey(ctx context.Context) *plugin.Table {
 			Hydrate: listAPIKey,
 		},
 		Columns: []*plugin.Column{
-			{Name: "name", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "description", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "entity_tag", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "crn", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "id", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "iam_id", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "account_id", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "created_at", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "modified_at", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "api_key", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "history", Type: proto.ColumnType_JSON, Description: ""},
+			{Name: "name", Type: proto.ColumnType_STRING, Description: "Specifies the name of the API key."},
+			{Name: "id", Type: proto.ColumnType_STRING, Description: "Unique identifier of this API Key."},
+			{Name: "crn", Type: proto.ColumnType_STRING, Description: "Cloud Resource Name of the API key.", Transform: transform.FromField("CRN")},
+			{Name: "iam_id", Type: proto.ColumnType_STRING, Description: "The iam_id that this API key authenticates."},
+			{Name: "created_at", Type: proto.ColumnType_TIMESTAMP, Description: "Specifies the date and time, the API key is created.", Transform: transform.FromField("CreatedAt").Transform(ensureTimestamp)},
+			{Name: "description", Type: proto.ColumnType_STRING, Description: "The description of the API key."},
+			{Name: "entity_tag", Type: proto.ColumnType_STRING, Description: "Version of the API Key details object."},
+			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "ID of the account that this API key authenticates for."},
+			{Name: "modified_at", Type: proto.ColumnType_TIMESTAMP, Description: "Specifies the date and time, the API key las modified.", Transform: transform.FromField("ModifiedAt").Transform(ensureTimestamp)},
+			{Name: "api_key", Type: proto.ColumnType_STRING, Description: "The API key value. This property only contains the API key value for the following cases: create an API key, update a service ID API key that stores the API key value as retrievable, or get a service ID API key that stores the API key value as retrievable.", Transform: transform.FromField("Apikey")},
+			{Name: "history", Type: proto.ColumnType_JSON, Description: "History of the API key."},
 		},
 	}
 }
