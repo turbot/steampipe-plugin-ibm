@@ -141,6 +141,7 @@ func GetDefaultIBMRegion(d *plugin.QueryData) string {
 			regions = []string{region}
 		}
 
+		// https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs#region
 		if !helpers.StringSliceContains(allIBMRegions, region) {
 			regions = []string{"us-south"}
 		}
