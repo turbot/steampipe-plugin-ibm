@@ -12,6 +12,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
+//// TABLE DEFINITION
+
 func tableIbmIsVpc(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_is_vpc",
@@ -19,6 +21,13 @@ func tableIbmIsVpc(ctx context.Context) *plugin.Table {
 		GetMatrixItem: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listIsVpc,
+			KeyColumns: []*plugin.KeyColumn{
+				{
+					Name:      "classic_access",
+					Require:   plugin.Optional,
+					Operators: []string{"<>", "="},
+				},
+			},
 		},
 		Get: &plugin.GetConfig{
 			Hydrate:    getIsVpc,
@@ -61,19 +70,50 @@ func GetNext(next interface{}) string {
 	return q.Get("start")
 }
 
-func listIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+//// LIST FUNCTION
 
-	conn, err := vpcService(ctx, d)
+func listIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	region := plugin.GetMatrixItem(ctx)["region"].(string)
+
+	// Create service connection
+	conn, err := vpcService(ctx, d, region)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_is_vpc.listIsVpc", "connection_error", err)
 		return nil, err
 	}
 
 	// Retrieve the list of vpcs for your account.
-	limit := int64(100)
+	maxResult := int64(100)
 	start := ""
+
+	// Reduce the basic request limit down if the user has only requested a small number of rows
+	limit := d.QueryContext.Limit
+	if d.QueryContext.Limit != nil {
+		if *limit < maxResult {
+			maxResult = *limit
+		}
+	}
+
 	opts := &vpcv1.ListVpcsOptions{
-		Limit: &limit,
+		Limit: &maxResult,
+	}
+
+	// Equals Qual Map handling
+	if d.KeyColumnQuals["classic_access"] != nil {
+		opts.SetClassicAccess(d.KeyColumnQuals["classic_access"].GetBoolValue())
+	}
+
+	// Non-Equals Qual Map handling
+	if d.Quals["classic_access"] != nil {
+		for _, q := range d.Quals["classic_access"].Quals {
+			value := q.Value.GetBoolValue()
+			if q.Operator == "<>" {
+				opts.SetClassicAccess(false)
+				if !value {
+					opts.SetClassicAccess(true)
+				}
+			}
+		}
 	}
 
 	for {
@@ -87,6 +127,11 @@ func listIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) 
 		}
 		for _, i := range result.Vpcs {
 			d.StreamListItem(ctx, i)
+
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 		start = GetNext(result.Next)
 		if start == "" {
@@ -97,16 +142,23 @@ func listIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) 
 	return nil, nil
 }
 
-func getIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+//// HYDRATE FUNCTIONS
 
-	conn, err := vpcService(ctx, d)
+func getIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	region := plugin.GetMatrixItem(ctx)["region"].(string)
+
+	// Create service connection
+	conn, err := vpcService(ctx, d, region)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_is_vpc.getIsVpc", "connection_error", err)
 		return nil, err
 	}
+	id := d.KeyColumnQuals["id"].GetStringValue()
 
-	quals := d.KeyColumnQuals
-	id := quals["id"].GetStringValue()
+	// No inputs
+	if id == "" {
+		return nil, nil
+	}
 
 	// Retrieve the get of vpcs for your account.
 	opts := &vpcv1.GetVPCOptions{

@@ -26,12 +26,12 @@ func tableIbmIamUser(ctx context.Context) *plugin.Table {
 			{Name: "iam_id", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the user's IAM ID."},
 			{Name: "user_id", Type: proto.ColumnType_STRING, Description: "The user ID used for login."},
 			{Name: "realm", Type: proto.ColumnType_STRING, Description: "The realm of the user. The value is either IBMid or SL."},
-			{Name: "first_name", Type: proto.ColumnType_STRING, Description: "The first name of the user."},
-			{Name: "last_name", Type: proto.ColumnType_STRING, Description: "The last name of the user."},
+			{Name: "first_name", Type: proto.ColumnType_STRING, Description: "The first name of the user.", Transform: transform.FromField("Firstname")},
+			{Name: "last_name", Type: proto.ColumnType_STRING, Description: "The last name of the user.", Transform: transform.FromField("Lastname")},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "The state of the user. Possible values are PROCESSING, PENDING, ACTIVE, DISABLED_CLASSIC_INFRASTRUCTURE, and VPN_ONLY."},
 			{Name: "email", Type: proto.ColumnType_STRING, Description: "The email of the user."},
 			{Name: "phonenumber", Type: proto.ColumnType_STRING, Description: "The phone number of the user."},
-			{Name: "alt_phonenumber", Type: proto.ColumnType_STRING, Description: "The alternative phone number of the user."},
+			{Name: "alt_phonenumber", Type: proto.ColumnType_STRING, Description: "The alternative phone number of the user.", Transform: transform.FromField("Altphonenumber")},
 			{Name: "photo", Type: proto.ColumnType_STRING, Description: "A link to a photo of the user."},
 			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the account ID."},
 			{Name: "settings", Type: proto.ColumnType_JSON, Hydrate: getIamUserSettings, Transform: transform.FromValue(), Description: "User settings."},
@@ -39,8 +39,7 @@ func tableIbmIamUser(ctx context.Context) *plugin.Table {
 	}
 }
 
-func listIamUser(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-
+func listIamUser(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	conn, err := connect(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_iam_user.listIamUser", "connection_error", err)
@@ -55,13 +54,13 @@ func listIamUser(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 
 	client := svc.UserInvite()
 
-	userInfo, err := fetchUserDetails(conn, 2)
+	getAccountIdCached := plugin.HydrateFunc(getAccountId).WithCache()
+	accountID, err := getAccountIdCached(ctx, d, h)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_iam_user.listIamUser", "connection_error", err)
 		return nil, err
 	}
 
-	users, err := client.ListUsers(userInfo.userAccount)
+	users, err := client.ListUsers(accountID.(string))
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_iam_user.listIamUser", "query_error", err)
 		return nil, err
@@ -72,7 +71,7 @@ func listIamUser(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 	return nil, nil
 }
 
-func getIamUser(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func getIamUser(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 
 	conn, err := connect(ctx, d)
 	if err != nil {
@@ -88,16 +87,16 @@ func getIamUser(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData)
 
 	client := svc.UserInvite()
 
-	userInfo, err := fetchUserDetails(conn, 2)
+	getAccountIdCached := plugin.HydrateFunc(getAccountId).WithCache()
+	accountID, err := getAccountIdCached(ctx, d, h)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_iam_user.getIamUser", "connection_error", err)
 		return nil, err
 	}
 
 	quals := d.KeyColumnQuals
 	id := quals["id"].GetStringValue()
 
-	item, err := client.GetUserProfile(userInfo.userAccount, id)
+	item, err := client.GetUserProfile(accountID.(string), id)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_iam_user.getIamUser", "query_error", err)
 		return nil, err
@@ -123,13 +122,13 @@ func getIamUserSettings(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 
 	client := svc.UserInvite()
 
-	userInfo, err := fetchUserDetails(conn, 2)
+	getAccountIdCached := plugin.HydrateFunc(getAccountId).WithCache()
+	accountID, err := getAccountIdCached(ctx, d, h)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_iam_user.getIamUserSettings", "connection_error", err)
 		return nil, err
 	}
 
-	item, err := client.GetUserSettings(userInfo.userAccount, user.IamID)
+	item, err := client.GetUserSettings(accountID.(string), user.IamID)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_iam_user.getIamUserSettings", "query_error", err)
 		return nil, err
