@@ -19,6 +19,8 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"ibm_account":           tableIbmAccount(ctx),
 			"ibm_iam_role":          tableIbmIamRole(ctx),
 			"ibm_iam_user":          tableIbmIamUser(ctx),
+			"ibm_is_instance":       tableIbmIsInstance(ctx),
+			"ibm_is_instance_disk":  tableIbmIsInstanceDisk(ctx),
 			"ibm_is_region":         tableIbmIsRegion(ctx),
 			"ibm_is_security_group": tableIbmIsSecurityGroup(ctx),
 			"ibm_is_subnet":         tableIbmIsSubnet(ctx),
