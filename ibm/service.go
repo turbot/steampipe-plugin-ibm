@@ -5,10 +5,42 @@ import (
 	"fmt"
 
 	"github.com/IBM/go-sdk-core/v5/core"
+	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
+	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
+
+// kmsService return the service for IBM KMS service
+func kmsService(ctx context.Context, d *plugin.QueryData) (*kp.Client, error) {
+	region := plugin.GetMatrixItem(ctx)["region"].(string)
+
+	// Load connection from cache, which preserves throttling protection etc
+	cacheKey := "ibm_kms"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*kp.Client), nil
+	}
+
+	// Create region endpoint
+	endpoint := fmt.Sprintf("https://%s.kms.cloud.ibm.com", region)
+	apiKey, err := configApiKey(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	opts := kp.ClientConfig{
+		BaseURL:  endpoint,
+		APIKey:   apiKey,
+		TokenURL: kp.DefaultTokenURL,
+	}
+	service, err := kp.New(opts, kp.DefaultTransport())
+	if err != nil {
+		return nil, err
+	}
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, service)
+	return service, nil
+}
 
 // vpcService returns the service for IBM VPC Infrastructure service
 func vpcService(ctx context.Context, d *plugin.QueryData, region string) (*vpcv1.VpcV1, error) {
@@ -70,6 +102,57 @@ func tagService(ctx context.Context, d *plugin.QueryData) (*globaltaggingv1.Glob
 	// Save to cache
 	d.ConnectionManager.Cache.Set(cacheKey, service)
 	return service, nil
+}
+
+func resourceControllerService(ctx context.Context, d *plugin.QueryData) (*resourcecontrollerv2.ResourceControllerV2, error) {
+	// Load connection from cache, which preserves throttling protection etc
+	cacheKey := "ibm_resource_controller"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*resourcecontrollerv2.ResourceControllerV2), nil
+	}
+	apiKey, err := configApiKey(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	opts := &resourcecontrollerv2.ResourceControllerV2Options{
+		Authenticator: &core.IamAuthenticator{
+			ApiKey: apiKey,
+		},
+	}
+	service, err := resourcecontrollerv2.NewResourceControllerV2(opts)
+	if err != nil {
+		return nil, err
+	}
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, service)
+	return service, nil
+}
+
+func getServiceInstance(ctx context.Context, d *plugin.QueryData, instanceID string) (*resourcecontrollerv2.ResourceInstance, error) {
+	// Load connection from cache, which preserves throttling protection etc
+	cacheKey := "ibm_resource_controller_" + instanceID
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*resourcecontrollerv2.ResourceInstance), nil
+	}
+
+	conn, err := resourceControllerService(ctx, d)
+	if err != nil {
+		plugin.Logger(ctx).Error("getServiceInstance", "connection_error", err)
+		return nil, err
+	}
+	resourceInstanceGet := resourcecontrollerv2.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+
+	instanceData, _, err := conn.GetResourceInstance(&resourceInstanceGet)
+	if err != nil || instanceData == nil {
+		return nil, err
+	}
+
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, instanceData)
+
+	return instanceData, nil
 }
 
 /*
