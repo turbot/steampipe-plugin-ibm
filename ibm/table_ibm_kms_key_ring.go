@@ -30,6 +30,11 @@ func tableIbmKmsKeyRing(ctx context.Context) *plugin.Table {
 			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Transform: transform.FromQual("instance_id")},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date and time when the key ring was created."},
 			{Name: "created_by", Type: proto.ColumnType_STRING, Description: "The creator of the key ring."},
+
+			// Standard columns
+			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getAccountId).WithCache(), Transform: transform.FromValue(), Description: "The account ID of this key ring."},
+			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.From(getRegion), Description: "The region of this key ring."},
+			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("ID"), Description: resourceInterfaceDescription("title")},
 		},
 	}
 }

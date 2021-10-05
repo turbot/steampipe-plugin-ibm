@@ -62,6 +62,12 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 			{Name: "aliases", Type: proto.ColumnType_JSON, Description: "A list of key aliases."},
 			{Name: "dual_auth_delete", Type: proto.ColumnType_JSON, Description: "Metadata that indicates the status of a dual authorization policy on the key."},
 			{Name: "key_version", Type: proto.ColumnType_JSON, Description: "Properties associated with a specific key version."},
+
+			// Standard columns
+			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this key."},
+			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.From(getRegion), Description: "The region of this key."},
+			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
+			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("CRN").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Description: resourceInterfaceDescription("tags")},
 		},
 	}

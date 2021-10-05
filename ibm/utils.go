@@ -16,6 +16,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/strfmt"
 
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
@@ -208,8 +209,11 @@ func ensureTimestamp(ctx context.Context, d *transform.TransformData) (interface
 }
 
 func crnToAccountID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	crn := d.Value.(*string)
-	crnParts := strings.Split(*crn, ":")
+	if d.Value == nil {
+		return "", nil
+	}
+	crn := types.ToString(d.Value)
+	crnParts := strings.Split(crn, ":")
 	accountIDPart := crnParts[6]
 	if accountIDPart == "" {
 		return "", nil
