@@ -1,4 +1,4 @@
-# Table: aws_iam_user
+# Table: ibm_account
 
 An IBM account is a container for your IBM Cloud resources. You create and manage your IBM Cloud resources in an IBM account, and the IBM account provides administrative capabilities for access and billing.
 

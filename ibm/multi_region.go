@@ -109,8 +109,8 @@ func getRegion(ctx context.Context, d *transform.TransformData) (interface{}, er
 	return region, nil
 }
 
-// GetDefaultIBMRegion returns the default region for AWS partiton
-// if not set by Env variable or in aws profile
+// GetDefaultIBMRegion returns the default region for IBM account
+// if not set by Env variable
 func GetDefaultIBMRegion(d *plugin.QueryData) string {
 	// have we already created and cached the service?
 	serviceCacheKey := "GetDefaultIBMRegion"
@@ -119,7 +119,7 @@ func GetDefaultIBMRegion(d *plugin.QueryData) string {
 	}
 	allIBMRegions := Regions()
 
-	// get aws config info
+	// get ibm config info
 	ibmConfig := GetConfig(d.Connection)
 
 	var regions []string
