@@ -17,7 +17,7 @@ import (
 func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_kms_key",
-		Description:   "Users in the IBM Cloud account.",
+		Description:   "A key is a named object containing one or more key versions, along with metadata for the key.",
 		GetMatrixItem: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listKmsKeys,

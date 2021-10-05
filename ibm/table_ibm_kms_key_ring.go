@@ -14,7 +14,7 @@ import (
 func tableIbmKmsKeyRing(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_kms_key_ring",
-		Description:   "Users in the IBM Cloud account.",
+		Description:   "A key ring is a collection of leys in an IBM cloud location.",
 		GetMatrixItem: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listKmsKeyRings,
