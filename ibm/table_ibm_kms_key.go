@@ -42,7 +42,7 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 			{Name: "imported", Type: proto.ColumnType_BOOL, Description: "Indicates whether the key was originally imported or generated in Key Protect."},
 			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Transform: transform.From(getServiceInstanceID)},
 			{Name: "algorithm_type", Type: proto.ColumnType_STRING, Description: "Specifies the key algorithm."},
-			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date the key material was created."},
+			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The timestamp when the key material was created."},
 			{Name: "created_by", Type: proto.ColumnType_STRING, Description: "The unique identifier for the resource that created the key."},
 			{Name: "deleted", Type: proto.ColumnType_BOOL, Description: "Indicates whether the key has been deleted, or not."},
 			{Name: "deleted_by", Type: proto.ColumnType_STRING, Description: "The unique identifier for the resource that deleted the key."},

@@ -13,9 +13,7 @@ select
   status,
   issuer
 from
-  ibm_certificate_manager_certificate
-where
-  certificate_manager_instance_id = 'crn:v1:bluemix:public:cloudcerts:us-south:a/76aa4877fab6436db86f121f62faf221:f68bd88f-c4d4-4d81-9656-609e0b794c68::';
+  ibm_certificate_manager_certificate;
 ```
 
 ### List all imported certificates
@@ -30,5 +28,5 @@ select
 from
   ibm_certificate_manager_certificate
 where
-  certificate_manager_instance_id = 'crn:v1:bluemix:public:cloudcerts:us-south:a/76aa4877fab6436db86f121f62faf221:f68bd88f-c4d4-4d81-9656-609e0b794c68::' and imported;
+  imported;
 ```
