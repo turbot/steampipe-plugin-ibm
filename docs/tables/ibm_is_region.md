@@ -16,7 +16,7 @@ from
   ibm_is_region;
 ```
 
-### List all european regions
+### List all European regions
 
 ```sql
 select
