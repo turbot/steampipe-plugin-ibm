@@ -8,8 +8,8 @@ import (
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
-	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -129,7 +129,7 @@ func iamAccessGroupService(ctx context.Context, d *plugin.QueryData) (*iamaccess
 	return service, nil
 }
 
-func iamUserPolicy(ctx context.Context, d *plugin.QueryData) (*iampolicymanagementv1.IamPolicyManagementV1, error) {
+func iamPolicyManagementService(ctx context.Context, d *plugin.QueryData) (*iampolicymanagementv1.IamPolicyManagementV1, error) {
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_user_policy"
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {

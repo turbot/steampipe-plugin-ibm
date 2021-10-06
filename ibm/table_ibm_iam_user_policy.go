@@ -43,7 +43,7 @@ func tableIbmIamUserPolicy(ctx context.Context) *plugin.Table {
 
 func listUserPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Create service connection
-	conn, err := iamUserPolicy(ctx, d)
+	conn, err := iamPolicyManagementService(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_iam_user_policy.listUserPolicy", "connection_error", err)
 		return nil, err
