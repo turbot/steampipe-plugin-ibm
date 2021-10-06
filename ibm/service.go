@@ -7,9 +7,10 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
+	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
-	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
 
 // kmsService return the service for IBM KMS service
@@ -128,39 +129,11 @@ func resourceControllerService(ctx context.Context, d *plugin.QueryData) (*resou
 	return service, nil
 }
 
-func getServiceInstance(ctx context.Context, d *plugin.QueryData, instanceID string) (*resourcecontrollerv2.ResourceInstance, error) {
+func resourceManagerService(ctx context.Context, d *plugin.QueryData) (*resourcemanagerv2.ResourceManagerV2, error) {
 	// Load connection from cache, which preserves throttling protection etc
-	cacheKey := "ibm_resource_controller_" + instanceID
+	cacheKey := "ibm_resource_manager"
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
-		return cachedData.(*resourcecontrollerv2.ResourceInstance), nil
-	}
-
-	conn, err := resourceControllerService(ctx, d)
-	if err != nil {
-		plugin.Logger(ctx).Error("getServiceInstance", "connection_error", err)
-		return nil, err
-	}
-	resourceInstanceGet := resourcecontrollerv2.GetResourceInstanceOptions{
-		ID: &instanceID,
-	}
-
-	instanceData, _, err := conn.GetResourceInstance(&resourceInstanceGet)
-	if err != nil || instanceData == nil {
-		return nil, err
-	}
-
-	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, instanceData)
-
-	return instanceData, nil
-}
-
-/*
-func resourceManagerService(ctx context.Context, d *plugin.QueryData) (*resourcemanagerv2.ResourceManagementAPIv2, error) {
-	// Load connection from cache, which preserves throttling protection etc
-	cacheKey := "ibm_resource_controller"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
-		return cachedData.(*resourcemanagerv2.ResourceManagementAPIv2), nil
+		return cachedData.(*resourcemanagerv2.ResourceManagerV2), nil
 	}
 	apiKey, err := configApiKey(ctx, d)
 	if err != nil {
@@ -179,4 +152,3 @@ func resourceManagerService(ctx context.Context, d *plugin.QueryData) (*resource
 	d.ConnectionManager.Cache.Set(cacheKey, service)
 	return service, nil
 }
-*/

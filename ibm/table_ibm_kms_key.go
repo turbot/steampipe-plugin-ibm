@@ -2,11 +2,8 @@ package ibm
 
 import (
 	"context"
-	"fmt"
-	"net/url"
 	"strings"
 
-	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -18,13 +15,13 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_kms_key",
 		Description:   "A key is a named object containing one or more key versions, along with metadata for the key.",
-		GetMatrixItem: BuildRegionList,
+		GetMatrixItem: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listKmsKeys,
 			KeyColumns: []*plugin.KeyColumn{
 				{
 					Name:    "instance_id",
-					Require: plugin.Required,
+					Require: plugin.Optional,
 				},
 				{
 					Name:    "key_ring_id",
@@ -34,7 +31,7 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 		},
 		Get: &plugin.GetConfig{
 			Hydrate:    getKmsKey,
-			KeyColumns: plugin.AllColumns([]string{"instance_id", "id"}),
+			KeyColumns: plugin.SingleColumn("id"),
 		},
 		Columns: []*plugin.Column{
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "A human-readable name assigned to your key for convenience."},
@@ -43,7 +40,7 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 			{Name: "type", Type: proto.ColumnType_STRING, Description: "Specifies the MIME type that represents the key resource."},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "The key state based on NIST SP 800-57. States are integers and correspond to the Pre-activation = 0, Active = 1, Suspended = 2, Deactivated = 3, and Destroyed = 5 values."},
 			{Name: "imported", Type: proto.ColumnType_BOOL, Description: "Indicates whether the key was originally imported or generated in Key Protect."},
-			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Transform: transform.FromQual("instance_id")},
+			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Transform: transform.From(getServiceInstanceID)},
 			{Name: "algorithm_type", Type: proto.ColumnType_STRING, Description: "Specifies the key algorithm."},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date the key material was created."},
 			{Name: "created_by", Type: proto.ColumnType_STRING, Description: "The unique identifier for the resource that created the key."},
@@ -76,26 +73,20 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
-	instanceID := d.KeyColumnQuals["instance_id"].GetStringValue()
+	plugin.Logger(ctx).Trace("listKmsKeys")
 
-	// Get service instance details
-	instanceData, err := getServiceInstance(ctx, d, instanceID)
-	if err != nil {
-		plugin.Logger(ctx).Error("ibm_kms_key.getServiceInstance", "query_error", err)
-	}
-	splitID := strings.Split(*instanceData.ID, ":")
-	var instanceRegion string
-	if len(splitID) > 5 {
-		instanceRegion = splitID[5]
-	}
+	instanceID := plugin.GetMatrixItem(ctx)["instance_id"].(string)
+	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
 
-	// Compare service instance region with config region
-	if region != instanceRegion {
+	// Invalid service type
+	if serviceType != "kms" {
 		return nil, nil
 	}
 
-	endpointType := d.KeyColumnQuals["endpoint_type"].GetStringValue()
+	// Return if specified instanceID not matched
+	if d.KeyColumnQuals["instance_id"] != nil && d.KeyColumnQuals["instance_id"].GetStringValue() != instanceID {
+		return nil, nil
+	}
 
 	// Create service connection
 	conn, err := kmsService(ctx, d)
@@ -104,13 +95,6 @@ func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 		return nil, err
 	}
 	conn.Config.InstanceID = instanceID
-
-	URL, err := KmsEndpointURL(conn, endpointType, instanceData.Extensions)
-	if err != nil {
-		plugin.Logger(ctx).Error("ibm_kms_key.KmsEndpointURL", "connection_error", err)
-		return nil, err
-	}
-	conn.URL = URL
 
 	// Additional filters
 	if d.KeyColumnQuals["key_ring_id"] != nil {
@@ -131,6 +115,9 @@ func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	data, err := conn.GetKeys(ctx, int(maxResult), 0)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_kms_key.listKmsKeys", "query_error", err)
+		if strings.Contains(err.Error(), "key_ring does not exist") {
+			return nil, nil
+		}
 		return nil, err
 	}
 	for _, i := range data.Keys {
@@ -147,28 +134,17 @@ func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 //// HYDRATE FUNCTIONS
 
 func getKmsKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
-	instanceID := d.KeyColumnQuals["instance_id"].GetStringValue()
+	instanceID := plugin.GetMatrixItem(ctx)["instance_id"].(string)
+	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+
+	// Invalid service type
+	if serviceType != "kms" {
+		return nil, nil
+	}
 	id := d.KeyColumnQuals["id"].GetStringValue()
 
 	// No inputs
-	if instanceID == "" && id == "" {
-		return nil, nil
-	}
-
-	// Get service instance details
-	instanceData, err := getServiceInstance(ctx, d, instanceID)
-	if err != nil {
-		plugin.Logger(ctx).Error("ibm_kms_key.getServiceInstance", "query_error", err)
-	}
-	splitID := strings.Split(*instanceData.ID, ":")
-	var instanceRegion string
-	if len(splitID) > 5 {
-		instanceRegion = splitID[5]
-	}
-
-	// Compare service instance region with config region
-	if region != instanceRegion {
+	if id == "" {
 		return nil, nil
 	}
 
@@ -187,18 +163,4 @@ func getKmsKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	}
 
 	return data, nil
-}
-
-func KmsEndpointURL(kpAPI *kp.Client, endpointType string, extensions map[string]interface{}) (*url.URL, error) {
-	exturl := extensions["endpoints"].(map[string]interface{})["public"]
-	if endpointType == "private" || strings.Contains(kpAPI.Config.BaseURL, "private") {
-		exturl = extensions["endpoints"].(map[string]interface{})["private"]
-	}
-	endpointURL := fmt.Sprintf("%s/api/v2/keys", exturl.(string))
-
-	u, err := url.Parse(endpointURL)
-	if err != nil {
-		return nil, err
-	}
-	return u, nil
 }
