@@ -16,11 +16,17 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/strfmt"
 
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
 func configApiKey(_ context.Context, d *plugin.QueryData) (string, error) {
+	// Load API key from cache
+	cacheKey := "ibm_api_key"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(string), nil
+	}
 
 	// First, prefer the most specific env var
 	apiKey := os.Getenv("IBMCLOUD_API_KEY")
@@ -36,13 +42,14 @@ func configApiKey(_ context.Context, d *plugin.QueryData) (string, error) {
 
 	// Then, use config
 	ibmConfig := GetConfig(d.Connection)
-	if &ibmConfig != nil {
-		if ibmConfig.APIKey != nil {
-			apiKey = *ibmConfig.APIKey
-		}
-		if apiKey != "" {
-			return apiKey, nil
-		}
+	if ibmConfig.APIKey != nil {
+		apiKey = *ibmConfig.APIKey
+	}
+	if apiKey != "" {
+		// Save to cache
+		d.ConnectionManager.Cache.Set(cacheKey, apiKey)
+
+		return apiKey, nil
 	}
 
 	// No key, cannot proceed
@@ -50,7 +57,6 @@ func configApiKey(_ context.Context, d *plugin.QueryData) (string, error) {
 }
 
 func connect(ctx context.Context, d *plugin.QueryData) (*session.Session, error) {
-
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm"
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
@@ -138,6 +144,33 @@ func authenticateAPIKey(sess *session.Session) error {
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 }
 
+// Get current user account
+func getAccountId(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	cacheKey := "IBMAccountId"
+
+	// if found in cache, return the result
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(string), nil
+	}
+
+	conn, err := connect(ctx, d)
+	if err != nil {
+		plugin.Logger(ctx).Error("getAccountId", "connection_error", err)
+		return "", err
+	}
+
+	userInfo, err := fetchUserDetails(conn, 2)
+	if err != nil {
+		plugin.Logger(ctx).Error("ibm_iam_user.listIamUser", "connection_error", err)
+		return nil, err
+	}
+
+	// save to extension cache
+	d.ConnectionManager.Cache.Set(cacheKey, userInfo.userAccount)
+
+	return userInfo.userAccount, nil
+}
+
 func resourceInterfaceDescription(key string) string {
 	switch key {
 	case "akas":
@@ -176,8 +209,11 @@ func ensureTimestamp(ctx context.Context, d *transform.TransformData) (interface
 }
 
 func crnToAccountID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	crn := d.Value.(*string)
-	crnParts := strings.Split(*crn, ":")
+	if d.Value == nil {
+		return "", nil
+	}
+	crn := types.ToString(d.Value)
+	crnParts := strings.Split(crn, ":")
 	accountIDPart := crnParts[6]
 	if accountIDPart == "" {
 		return "", nil

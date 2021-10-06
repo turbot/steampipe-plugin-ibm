@@ -4,25 +4,66 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/IBM/go-sdk-core/v4/core"
+	"github.com/IBM/go-sdk-core/v5/core"
+	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
+	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-func vpcService(ctx context.Context, d *plugin.QueryData) (*vpcv1.VpcV1, error) {
+// kmsService return the service for IBM KMS service
+func kmsService(ctx context.Context, d *plugin.QueryData) (*kp.Client, error) {
 	region := plugin.GetMatrixItem(ctx)["region"].(string)
+
+	// Load connection from cache, which preserves throttling protection etc
+	cacheKey := "ibm_kms"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*kp.Client), nil
+	}
+
+	// Create region endpoint
+	endpoint := fmt.Sprintf("https://%s.kms.cloud.ibm.com", region)
+	apiKey, err := configApiKey(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	opts := kp.ClientConfig{
+		BaseURL:  endpoint,
+		APIKey:   apiKey,
+		TokenURL: kp.DefaultTokenURL,
+	}
+	service, err := kp.New(opts, kp.DefaultTransport())
+	if err != nil {
+		return nil, err
+	}
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, service)
+	return service, nil
+}
+
+// vpcService returns the service for IBM VPC Infrastructure service
+func vpcService(ctx context.Context, d *plugin.QueryData, region string) (*vpcv1.VpcV1, error) {
+	if region == "" {
+		return nil, fmt.Errorf("region must be passed vpcService")
+	}
+
+	// Create region endpoint
 	endpoint := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", region)
+
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := endpoint
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
 		return cachedData.(*vpcv1.VpcV1), nil
 	}
+
+	// Fetch API key from config
 	apiKey, err := configApiKey(ctx, d)
 	if err != nil {
 		return nil, err
 	}
+
 	// Instantiate the service with an API key based IAM authenticator
 	service, err := vpcv1.NewVpcV1(&vpcv1.VpcV1Options{
 		URL: endpoint,
@@ -33,8 +74,10 @@ func vpcService(ctx context.Context, d *plugin.QueryData) (*vpcv1.VpcV1, error) 
 	if err != nil {
 		return nil, err
 	}
+
 	// Save to cache
 	d.ConnectionManager.Cache.Set(cacheKey, service)
+
 	return service, nil
 }
 
@@ -62,12 +105,35 @@ func tagService(ctx context.Context, d *plugin.QueryData) (*globaltaggingv1.Glob
 	return service, nil
 }
 
-/*
-func resourceManagerService(ctx context.Context, d *plugin.QueryData) (*resourcemanagerv2.ResourceManagementAPIv2, error) {
+func resourceControllerService(ctx context.Context, d *plugin.QueryData) (*resourcecontrollerv2.ResourceControllerV2, error) {
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_resource_controller"
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
-		return cachedData.(*resourcemanagerv2.ResourceManagementAPIv2), nil
+		return cachedData.(*resourcecontrollerv2.ResourceControllerV2), nil
+	}
+	apiKey, err := configApiKey(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	opts := &resourcecontrollerv2.ResourceControllerV2Options{
+		Authenticator: &core.IamAuthenticator{
+			ApiKey: apiKey,
+		},
+	}
+	service, err := resourcecontrollerv2.NewResourceControllerV2(opts)
+	if err != nil {
+		return nil, err
+	}
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, service)
+	return service, nil
+}
+
+func resourceManagerService(ctx context.Context, d *plugin.QueryData) (*resourcemanagerv2.ResourceManagerV2, error) {
+	// Load connection from cache, which preserves throttling protection etc
+	cacheKey := "ibm_resource_manager"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*resourcemanagerv2.ResourceManagerV2), nil
 	}
 	apiKey, err := configApiKey(ctx, d)
 	if err != nil {
@@ -86,4 +152,3 @@ func resourceManagerService(ctx context.Context, d *plugin.QueryData) (*resource
 	d.ConnectionManager.Cache.Set(cacheKey, service)
 	return service, nil
 }
-*/

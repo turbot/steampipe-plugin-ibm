@@ -10,6 +10,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
+//// TABLE DEFINITION
+
 func tableIbmIsSecurityGroup(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_is_security_group",
@@ -45,19 +47,32 @@ func tableIbmIsSecurityGroup(ctx context.Context) *plugin.Table {
 	}
 }
 
-func listIsSecurityGroup(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+//// LIST FUNCTION
 
-	conn, err := vpcService(ctx, d)
+func listIsSecurityGroup(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	region := plugin.GetMatrixItem(ctx)["region"].(string)
+
+	// Create service connection
+	conn, err := vpcService(ctx, d, region)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_is_security_group.listIsSecurityGroup", "connection_error", err)
 		return nil, err
 	}
 
 	// Retrieve the list of vpcs for your account.
-	limit := int64(100)
+	maxResult := int64(100)
 	start := ""
+
+	// Reduce the basic request limit down if the user has only requested a small number of rows
+	limit := d.QueryContext.Limit
+	if d.QueryContext.Limit != nil {
+		if *limit < maxResult {
+			maxResult = *limit
+		}
+	}
+
 	opts := &vpcv1.ListSecurityGroupsOptions{
-		Limit: &limit,
+		Limit: &maxResult,
 	}
 
 	for {
@@ -71,6 +86,11 @@ func listIsSecurityGroup(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 		}
 		for _, i := range result.SecurityGroups {
 			d.StreamListItem(ctx, i)
+
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 		start = GetNext(result.Next)
 		if start == "" {
@@ -81,16 +101,23 @@ func listIsSecurityGroup(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 	return nil, nil
 }
 
-func getIsSecurityGroup(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+//// HYDRATE FUNCTIONS
 
-	conn, err := vpcService(ctx, d)
+func getIsSecurityGroup(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	region := plugin.GetMatrixItem(ctx)["region"].(string)
+
+	// Create service connection
+	conn, err := vpcService(ctx, d, region)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_is_security_group.getIsSecurityGroup", "connection_error", err)
 		return nil, err
 	}
+	id := d.KeyColumnQuals["id"].GetStringValue()
 
-	quals := d.KeyColumnQuals
-	id := quals["id"].GetStringValue()
+	// No inputs
+	if id == "" {
+		return nil, nil
+	}
 
 	// Retrieve the get of vpcs for your account.
 	opts := &vpcv1.GetSecurityGroupOptions{
