@@ -27,7 +27,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"ibm_is_vpc":            tableIbmIsVpc(ctx),
 			"ibm_kms_key":           tableIbmKmsKey(ctx),
 			"ibm_kms_key_ring":      tableIbmKmsKeyRing(ctx),
-			//"ibm_resource_group":    tableIbmResourceGroup(ctx),
+			"ibm_resource_group":    tableIbmResourceGroup(ctx),
 		},
 	}
 	return p

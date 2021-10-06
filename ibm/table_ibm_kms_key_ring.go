@@ -2,7 +2,6 @@ package ibm
 
 import (
 	"context"
-	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -15,19 +14,19 @@ func tableIbmKmsKeyRing(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_kms_key_ring",
 		Description:   "A key ring is a collection of leys in an IBM cloud location.",
-		GetMatrixItem: BuildRegionList,
+		GetMatrixItem: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listKmsKeyRings,
 			KeyColumns: []*plugin.KeyColumn{
 				{
 					Name:    "instance_id",
-					Require: plugin.Required,
+					Require: plugin.Optional,
 				},
 			},
 		},
 		Columns: []*plugin.Column{
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "An unique identifier of the key ring."},
-			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Transform: transform.FromQual("instance_id")},
+			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Transform: transform.From(getServiceInstanceId)},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date and time when the key ring was created."},
 			{Name: "created_by", Type: proto.ColumnType_STRING, Description: "The creator of the key ring."},
 
@@ -42,22 +41,18 @@ func tableIbmKmsKeyRing(ctx context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listKmsKeyRings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
-	instanceID := d.KeyColumnQuals["instance_id"].GetStringValue()
+	plugin.Logger(ctx).Trace("listKmsKeyRings")
 
-	// Get service instance details
-	instanceData, err := getServiceInstance(ctx, d, instanceID)
-	if err != nil {
-		plugin.Logger(ctx).Error("ibm_kms_key_ring.getServiceInstance", "query_error", err)
-	}
-	splitID := strings.Split(*instanceData.ID, ":")
-	var instanceRegion string
-	if len(splitID) > 5 {
-		instanceRegion = splitID[5]
+	instanceID := plugin.GetMatrixItem(ctx)["instance_id"].(string)
+	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+
+	// Invalid service type
+	if serviceType != "kms" {
+		return nil, nil
 	}
 
-	// Compare service instance region with config region
-	if region != instanceRegion {
+	// Return if specified instanceID not matched
+	if d.KeyColumnQuals["instance_id"] != nil && d.KeyColumnQuals["instance_id"].GetStringValue() != instanceID {
 		return nil, nil
 	}
 
