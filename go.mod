@@ -9,8 +9,8 @@ require (
 	github.com/IBM/keyprotect-go-client v0.7.0
 	github.com/IBM/platform-services-go-sdk v0.18.0
 	github.com/IBM/vpc-go-sdk v1.0.1
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-openapi/strfmt v0.20.1
+	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
 	github.com/turbot/go-kit v0.2.2-0.20210628165333-268ba0a30be3

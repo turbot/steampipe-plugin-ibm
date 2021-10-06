@@ -13,8 +13,8 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/http"
 	"github.com/IBM-Cloud/bluemix-go/rest"
 	"github.com/IBM-Cloud/bluemix-go/session"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/strfmt"
+	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
