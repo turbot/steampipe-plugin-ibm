@@ -12,7 +12,7 @@ import (
 func tableIbmIamRole(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "ibm_iam_role",
-		Description: "TODO",
+		Description: "An IAM role is an Identity and Access Management (IAM) entity with permissions to make IBM cloud service requests.",
 		List: &plugin.ListConfig{
 			Hydrate: listIamRole,
 		},

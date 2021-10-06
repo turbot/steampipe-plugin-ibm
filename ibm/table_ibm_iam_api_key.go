@@ -29,7 +29,7 @@ func iamAPIKeyColumns() []*plugin.Column {
 
 //// TABLE DEFINITION
 
-func tableIbmAPIKey(ctx context.Context) *plugin.Table {
+func tableIbmIamAPIKey(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "ibm_iam_api_key",
 		Description: "API keys in the IBM Cloud account.",

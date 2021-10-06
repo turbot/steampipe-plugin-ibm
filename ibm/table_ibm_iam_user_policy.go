@@ -17,7 +17,7 @@ import (
 func tableIbmIamUserPolicy(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "ibm_iam_user_policy",
-		Description: "Access Groups in the IBM Cloud account.",
+		Description: "User access policies in the IBM Cloud account.",
 		List: &plugin.ListConfig{
 			Hydrate:       listUserPolicy,
 			ParentHydrate: listIamUser,

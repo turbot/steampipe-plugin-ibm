@@ -10,7 +10,7 @@ import (
 
 //// TABLE DEFINITION
 
-func tableIbmMyAPIKey(ctx context.Context) *plugin.Table {
+func tableIbmIamMyAPIKey(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "ibm_iam_my_api_key",
 		Description: "User's API key in the IBM Cloud account.",
