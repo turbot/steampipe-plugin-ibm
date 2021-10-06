@@ -40,7 +40,7 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 			{Name: "type", Type: proto.ColumnType_STRING, Description: "Specifies the MIME type that represents the key resource."},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "The key state based on NIST SP 800-57. States are integers and correspond to the Pre-activation = 0, Active = 1, Suspended = 2, Deactivated = 3, and Destroyed = 5 values."},
 			{Name: "imported", Type: proto.ColumnType_BOOL, Description: "Indicates whether the key was originally imported or generated in Key Protect."},
-			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Transform: transform.From(getServiceInstanceId)},
+			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Transform: transform.From(getServiceInstanceID)},
 			{Name: "algorithm_type", Type: proto.ColumnType_STRING, Description: "Specifies the key algorithm."},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date the key material was created."},
 			{Name: "created_by", Type: proto.ColumnType_STRING, Description: "The unique identifier for the resource that created the key."},

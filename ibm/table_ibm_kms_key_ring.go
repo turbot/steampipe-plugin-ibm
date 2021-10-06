@@ -26,7 +26,7 @@ func tableIbmKmsKeyRing(ctx context.Context) *plugin.Table {
 		},
 		Columns: []*plugin.Column{
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "An unique identifier of the key ring."},
-			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Transform: transform.From(getServiceInstanceId)},
+			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Transform: transform.From(getServiceInstanceID)},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date and time when the key ring was created."},
 			{Name: "created_by", Type: proto.ColumnType_STRING, Description: "The creator of the key ring."},
 
