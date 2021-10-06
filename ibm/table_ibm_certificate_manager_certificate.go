@@ -11,6 +11,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
+//// TABLE DEFINITION
+
 func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "ibm_certificate_manager_certificate",
@@ -31,10 +33,11 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 			{Name: "serial_number", Type: proto.ColumnType_STRING, Description: "The serial number of a certificate."},
 			{Name: "certificate_manager_instance_id", Type: proto.ColumnType_STRING, Description: "The CRN of the certificate manager service instance.", Transform: transform.FromQual("certificate_manager_instance_id")},
 			{Name: "algorithm", Type: proto.ColumnType_STRING, Description: "The Algorithm of a certificate."},
-			{Name: "begins_on", Type: proto.ColumnType_INT, Description: "The creation date of the certificate in UNIX epoch time."},
+			{Name: "begins_on", Type: proto.ColumnType_INT, Description: "The creation date of the certificate.", Transform: transform.FromField("beginsOn").Transform(ensureTimestamp)},
+			{Name: "expires_on", Type: proto.ColumnType_INT, Description: "The expiration date of the certificate.", Transform: transform.FromField("beginsOn").Transform(ensureTimestamp)},
 			{Name: "domains", Type: proto.ColumnType_JSON, Description: "An array of valid domains for the issued certificate. The first domain is the primary domain, extra domains are secondary domains."},
-			{Name: "expires_on", Type: proto.ColumnType_INT, Description: "The expiration date of the certificate in Unix epoch time."},
 			{Name: "has_previous", Type: proto.ColumnType_BOOL, Description: "Indicates whether a certificate has a previous version."},
+			{Name: "rotate_keys", Type: proto.ColumnType_BOOL, Description: "Rotate keys."},
 			{Name: "imported", Type: proto.ColumnType_BOOL, Description: "Indicates whether a certificate has imported or not."},
 			{Name: "issuance_info", Type: proto.ColumnType_JSON, Description: "The issuance information of a certificate."},
 			{Name: "issuer", Type: proto.ColumnType_STRING, Description: "The issuer of the certificate."},
@@ -42,10 +45,11 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 			{Name: "data", Type: proto.ColumnType_STRING, Description: "The certificate data.", Hydrate: getCertificate, Transform: transform.FromValue()},
 			{Name: "data_key_id", Type: proto.ColumnType_STRING, Description: "The data key id.", Hydrate: getCertificate, Transform: transform.FromValue()},
 			{Name: "order_policy", Type: proto.ColumnType_JSON, Description: "The order policy of the certificate."},
-			{Name: "rotate_keys", Type: proto.ColumnType_BOOL, Description: ""},
 		},
 	}
 }
+
+//// LIST FUNCTION
 
 func listCertificate(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	conn, err := connect(ctx, d)
@@ -75,6 +79,8 @@ func listCertificate(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	}
 	return nil, nil
 }
+
+//// HYDRATE FUNCTIONS
 
 func getCertificate(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	conn, err := connect(ctx, d)

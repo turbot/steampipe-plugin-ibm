@@ -203,7 +203,10 @@ func ensureStringArray(_ context.Context, d *transform.TransformData) (interface
 }
 
 func ensureTimestamp(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	t := d.Value.(*strfmt.DateTime)
+	if d.Value == nil {
+		return nil, nil
+	}
+  t := d.Value.(*strfmt.DateTime)
 	plugin.Logger(ctx).Warn("ensureTimestamp", "d.Value", t)
 	return t.String(), nil
 }
