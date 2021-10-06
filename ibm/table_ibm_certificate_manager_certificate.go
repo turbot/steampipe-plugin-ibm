@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/IBM-Cloud/bluemix-go/api/certificatemanager"
-	"github.com/IBM-Cloud/bluemix-go/models"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -27,10 +26,6 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 				},
 			},
 		},
-		Get: &plugin.GetConfig{
-			Hydrate:    getCertificate,
-			KeyColumns: plugin.SingleColumn("id"),
-		},
 		Columns: []*plugin.Column{
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The ID of the certificate that is managed in certificate manager."},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The display name of the certificate."},
@@ -48,8 +43,6 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 			{Name: "issuance_info", Type: proto.ColumnType_JSON, Description: "The issuance information of a certificate."},
 			{Name: "issuer", Type: proto.ColumnType_STRING, Description: "The issuer of the certificate."},
 			{Name: "key_algorithm", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the account ID."},
-			{Name: "data", Type: proto.ColumnType_JSON, Description: "The certificate data.", Hydrate: getCertificate, Transform: transform.FromValue()},
-			{Name: "data_key_id", Type: proto.ColumnType_JSON, Description: "The data key id.", Hydrate: getCertificate, Transform: transform.FromValue()},
 			{Name: "order_policy", Type: proto.ColumnType_JSON, Description: "The order policy of the certificate."},
 			// Standard columns
 			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("ID").Transform(crnToAccountID), Description: "The account ID of this certificate."},
@@ -107,50 +100,4 @@ func listCertificate(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		}
 	}
 	return nil, nil
-}
-
-//// HYDRATE FUNCTIONS
-
-func getCertificate(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
-
-	// Invalid service type
-	if serviceType != "cloudcerts" {
-		return nil, nil
-	}
-
-	// Create service connection
-	conn, err := connect(ctx, d)
-	if err != nil {
-		plugin.Logger(ctx).Error("ibm_certificate_manager_certificate.getCertificate", "connection_error", err)
-		return nil, err
-	}
-
-	svc, err := certificatemanager.New(conn)
-	if err != nil {
-		plugin.Logger(ctx).Error("ibm_certificate_manager_certificate.getCertificate", "connection_error", err)
-		return nil, err
-	}
-
-	client := svc.Certificate()
-
-	var id string
-	if h.Item != nil {
-		id = h.Item.(models.CertificateInfo).ID
-	} else {
-		id = d.KeyColumnQuals["id"].GetStringValue()
-	}
-
-	// No inputs
-	if id == "" {
-		return nil, nil
-	}
-
-	certificate, err := client.GetCertData(id)
-	if err != nil {
-		plugin.Logger(ctx).Error("ibm_certificate_manager_certificate.getCertificate", "query_error", err)
-		return nil, err
-	}
-
-	return certificate, nil
 }
