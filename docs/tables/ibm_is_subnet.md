@@ -18,7 +18,7 @@ from
   ibm_is_subnet;
 ```
 
-### List all subnets having available ipv4 address count less than 251
+### List all subnets with fewer than 251 available IPv4 addresses
 
 ```sql
 select
