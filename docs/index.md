@@ -2,7 +2,7 @@
 organization: Turbot
 category: ["public cloud"]
 icon_url: "/images/plugins/turbot/ibm.svg"
-brand_color: "#00b050"
+brand_color: "#466BB0"
 display_name: "IBM Cloud"
 short_name: "ibm"
 description: "Steampipe plugin to query resources, users and more from IBM Cloud."
@@ -69,11 +69,11 @@ Installing the latest ibm plugin will create a config file (`~/.steampipe/config
 connection "ibm" {
   plugin  = "ibm"
 
-  # You may connect to one or more regions. If `regions` is not specified, 
+  # You may connect to one or more regions. If `regions` is not specified,
   # Steampipe will use a single default region using:
   # The `IC_REGION` or `IBMCLOUD_REGION` environment variable
   # regions     = ["us-south", "eu-de"]
-  
+
   # API Key from IBM Cloud
   # api_key = "0hrqaLNt-Nc831AW5k7z10CcwOGk_ttqTpOSWYJ2rnwi"
 }
@@ -90,7 +90,7 @@ You may also specify one or more regions with the `regions` argument:
 
 ```hcl
 connection "ibm" {
-  plugin  = "ibm"    
+  plugin  = "ibm"
   regions = ["au-syd", "eu-de", "eu-gb", "jp-osa", "jp-tok", "us-east", "us-south"]
 }
 ```
@@ -101,8 +101,8 @@ The `region` argument supports wildcards:
 
   ```hcl
   connection "ibm" {
-    plugin  = "ibm"    
-    regions = ["*"] 
+    plugin  = "ibm"
+    regions = ["*"]
   }
   ```
 
@@ -110,8 +110,8 @@ The `region` argument supports wildcards:
 
   ```hcl
   connection "ibm" {
-    plugin    = "ibm"    
-    regions   = ["us-*", "eu-*"] 
+    plugin    = "ibm"
+    regions   = ["us-*", "eu-*"]
   }
   ```
 
@@ -130,6 +130,6 @@ export IBMCLOUD_API_KEY=0hrqaLNt-Nc831AW5k7z10CcwOGk_ttqTpOSWYJ2rnwi
 
 ```hcl
 connection "ibm" {
-  plugin = "ibm" 
+  plugin = "ibm"
 }
 ```
