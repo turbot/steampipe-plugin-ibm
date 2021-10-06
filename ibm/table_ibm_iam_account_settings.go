@@ -3,12 +3,15 @@ package ibm
 import (
 	"context"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
+
+//// TABLE DEFINITION
 
 func tableIbmAccountSettings(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
@@ -31,36 +34,32 @@ func tableIbmAccountSettings(ctx context.Context) *plugin.Table {
 	}
 }
 
-func getAccountSettings(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+//// LIST FUNCTION
 
+func getAccountSettings(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	// Create service connection
 	conn, err := iamService(ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_iam_api_key.listAPIKey", "connection_error", err)
+		plugin.Logger(ctx).Error("ibm_iam_account_settings.getAccountSettings", "connection_error", err)
 		return nil, err
 	}
 
-	userConn, err := connect(ctx, d)
+	// Get account details
+	getAccountIdCached := plugin.HydrateFunc(getAccountId).WithCache()
+	accountID, err := getAccountIdCached(ctx, d, h)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_iam_role.listIamRole", "connection_error", err)
 		return nil, err
 	}
 
-	userInfo, err := fetchUserDetails(userConn, 2)
-	if err != nil {
-		plugin.Logger(ctx).Error("ibm_iam_user.listIamUser", "connection_error", err)
-		return nil, err
-	}
-	plugin.Logger(ctx).Warn("&userInfo.userAccount", "role>>>>>>>>>>>>", &userInfo.userAccount)
 	opts := &iamidentityv1.GetAccountSettingsOptions{
-		AccountID: &userInfo.userAccount,
+		AccountID: core.StringPtr(accountID.(string)),
 	}
 
 	accountSettings, resp, err := conn.GetAccountSettings(opts)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_iam_api_key.listAPIKey", "query_error", err, "resp", resp)
+		plugin.Logger(ctx).Error("ibm_iam_account_settings.getAccountSettings", "query_error", err, "resp", resp)
 		return nil, err
 	}
-	plugin.Logger(ctx).Warn("getAccountSettings", "role", *accountSettings.AccountID)
 
 	d.StreamListItem(ctx, accountSettings)
 

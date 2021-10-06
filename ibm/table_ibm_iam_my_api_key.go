@@ -5,49 +5,44 @@ import (
 
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 
-	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
+
+//// TABLE DEFINITION
 
 func tableIbmMyAPIKey(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "ibm_iam_my_api_key",
 		Description: "User's API key in the IBM Cloud account.",
 		List: &plugin.ListConfig{
-			Hydrate: getAPIKey,
+			Hydrate: listMyAPIKey,
 		},
-		Columns: []*plugin.Column{
-			{Name: "name", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "description", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "entity_tag", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "crn", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "id", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "iam_id", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "account_id", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "created_at", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "modified_at", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "api_key", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "history", Type: proto.ColumnType_JSON, Description: ""},
-		},
+		Columns: iamAPIKeyColumns(),
 	}
 }
 
-func getAPIKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+//// LIST FUNCTION
 
+func listMyAPIKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	conn, err := iamService(ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_iam_my_api_key.getAPIKey", "connection_error", err)
+		plugin.Logger(ctx).Error("ibm_iam_my_api_key.listMyAPIKey", "connection_error", err)
 		return nil, err
 	}
 	opts := &iamidentityv1.ListAPIKeysOptions{}
 
 	result, resp, err := conn.ListAPIKeys(opts)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_iam_my_api_key.getAPIKey", "query_error", err, "resp", resp)
+		plugin.Logger(ctx).Error("ibm_iam_my_api_key.listMyAPIKey", "query_error", err, "resp", resp)
 		return nil, err
 	}
 	for _, i := range result.Apikeys {
 		d.StreamListItem(ctx, i)
+
+		// Context can be cancelled due to manual cancellation or the limit has been hit
+		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
 	}
 	return nil, nil
 }

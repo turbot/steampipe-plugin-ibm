@@ -7,7 +7,6 @@ import (
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
-	//"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
 func tableIbmIamRole(ctx context.Context) *plugin.Table {
@@ -22,23 +21,23 @@ func tableIbmIamRole(ctx context.Context) *plugin.Table {
 			KeyColumns: plugin.SingleColumn("id"),
 		},
 		Columns: []*plugin.Column{
-			{Name: "id", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "crn", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "created_at", Type: proto.ColumnType_TIMESTAMP, Description: ""},
-			{Name: "created_by_id", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "last_modified_at", Type: proto.ColumnType_TIMESTAMP, Description: ""},
-			{Name: "last_modified_by_id", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "name", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "service_name", Type: proto.ColumnType_STRING, Description: ""},
+			{Name: "id", Type: proto.ColumnType_STRING, Description: "The role ID."},
+			{Name: "crn", Type: proto.ColumnType_STRING, Description: "The Cloud Resource Name (CRN) that uniquely identifies your cloud resources."},
+			{Name: "created_at", Type: proto.ColumnType_TIMESTAMP, Description: "The timestamp when the role was created."},
+			{Name: "created_by_id", Type: proto.ColumnType_STRING, Description: "The IAM ID of the entity that created the role."},
+			{Name: "last_modified_at", Type: proto.ColumnType_TIMESTAMP, Description: "The timestamp when the role was last modified."},
+			{Name: "last_modified_by_id", Type: proto.ColumnType_STRING, Description: "The IAM ID of the entity that last modified the policy."},
+			{Name: "name", Type: proto.ColumnType_STRING, Description: "The name of the role that is used in the CRN."},
+			{Name: "service_name", Type: proto.ColumnType_STRING, Description: "The service name."},
 			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the account ID."},
-			{Name: "display_name", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "description", Type: proto.ColumnType_STRING, Description: ""},
-			{Name: "actions", Type: proto.ColumnType_JSON, Description: ""},
+			{Name: "display_name", Type: proto.ColumnType_STRING, Description: "The display name of the role that is shown in the console."},
+			{Name: "description", Type: proto.ColumnType_STRING, Description: "The description of the role."},
+			{Name: "actions", Type: proto.ColumnType_JSON, Description: "The actions of the role."},
 		},
 	}
 }
 
-func listIamRole(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listIamRole(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	conn, err := connect(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_iam_role.listIamRole", "connection_error", err)
@@ -53,13 +52,14 @@ func listIamRole(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 
 	client := svc.IAMRoles()
 
-	userInfo, err := fetchUserDetails(conn, 2)
+	// Get account details
+	getAccountIdCached := plugin.HydrateFunc(getAccountId).WithCache()
+	accountID, err := getAccountIdCached(ctx, d, h)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_iam_user.listIamUser", "connection_error", err)
 		return nil, err
 	}
 
-	opts := iampapv2.RoleQuery{AccountID: userInfo.userAccount}
+	opts := iampapv2.RoleQuery{AccountID: accountID.(string)}
 	roles, err := client.ListAll(opts)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_iam_role.listIamRole", "query_error", err)
@@ -89,13 +89,16 @@ func getIamRole(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData)
 	quals := d.KeyColumnQuals
 	id := quals["id"].GetStringValue()
 
+	// No inputs
+	if id == "" {
+		return nil, nil
+	}
+
 	role, etag, err := client.Get(id)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_iam_role.getIamRole", "query_error", err, "etag", etag)
 		return nil, err
 	}
-
-	plugin.Logger(ctx).Warn("getIamRole", "role", role)
 
 	return role, nil
 }

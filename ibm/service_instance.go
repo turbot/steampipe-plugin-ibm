@@ -29,6 +29,7 @@ func BuildServiceInstanceList(ctx context.Context, connection *plugin.Connection
 		splitID := strings.Split(*instance, ":")
 		matrix[i] = map[string]interface{}{
 			"instance_id":  splitID[7],
+			"instance_crn": *instance,
 			"region":       splitID[5],
 			"service_type": splitID[4],
 		}

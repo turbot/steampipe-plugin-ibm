@@ -96,6 +96,11 @@ func getIamUser(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	quals := d.KeyColumnQuals
 	id := quals["id"].GetStringValue()
 
+	// No inputs
+	if id == "" {
+		return nil, nil
+	}
+
 	item, err := client.GetUserProfile(accountID.(string), id)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_iam_user.getIamUser", "query_error", err)
