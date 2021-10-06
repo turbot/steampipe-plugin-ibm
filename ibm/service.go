@@ -7,6 +7,9 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
+	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -78,6 +81,73 @@ func vpcService(ctx context.Context, d *plugin.QueryData, region string) (*vpcv1
 	// Save to cache
 	d.ConnectionManager.Cache.Set(cacheKey, service)
 
+	return service, nil
+}
+
+func iamService(ctx context.Context, d *plugin.QueryData) (*iamidentityv1.IamIdentityV1, error) {
+	// Load connection from cache, which preserves throttling protection etc
+	cacheKey := "ibm_iam"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*iamidentityv1.IamIdentityV1), nil
+	}
+	apiKey, err := configApiKey(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	serviceClientOptions := &iamidentityv1.IamIdentityV1Options{Authenticator: &core.IamAuthenticator{
+		ApiKey: apiKey,
+	}}
+	// Instantiate the service with an API key based IAM authenticator
+	service, err := iamidentityv1.NewIamIdentityV1UsingExternalConfig(serviceClientOptions)
+	if err != nil {
+		return nil, err
+	}
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, service)
+	return service, nil
+}
+
+func iamAccessGroupService(ctx context.Context, d *plugin.QueryData) (*iamaccessgroupsv2.IamAccessGroupsV2, error) {
+	// Load connection from cache, which preserves throttling protection etc
+	cacheKey := "ibm_access_group"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*iamaccessgroupsv2.IamAccessGroupsV2), nil
+	}
+	apiKey, err := configApiKey(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	serviceClientOptions := &iamaccessgroupsv2.IamAccessGroupsV2Options{Authenticator: &core.IamAuthenticator{
+		ApiKey: apiKey,
+	}}
+	service, err := iamaccessgroupsv2.NewIamAccessGroupsV2UsingExternalConfig(serviceClientOptions)
+	if err != nil {
+		return nil, err
+	}
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, service)
+	return service, nil
+}
+
+func iamPolicyManagementService(ctx context.Context, d *plugin.QueryData) (*iampolicymanagementv1.IamPolicyManagementV1, error) {
+	// Load connection from cache, which preserves throttling protection etc
+	cacheKey := "ibm_user_policy"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*iampolicymanagementv1.IamPolicyManagementV1), nil
+	}
+	apiKey, err := configApiKey(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	serviceClientOptions := &iampolicymanagementv1.IamPolicyManagementV1Options{Authenticator: &core.IamAuthenticator{
+		ApiKey: apiKey,
+	}}
+	service, err := iampolicymanagementv1.NewIamPolicyManagementV1UsingExternalConfig(serviceClientOptions)
+	if err != nil {
+		return nil, err
+	}
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, service)
 	return service, nil
 }
 

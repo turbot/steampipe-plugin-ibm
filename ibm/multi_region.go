@@ -115,6 +115,12 @@ func getServiceInstanceID(ctx context.Context, d *transform.TransformData) (inte
 	return instanceID, nil
 }
 
+// Transform used to get the instance_crn column
+func getServiceInstanceCRN(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	instanceID := plugin.GetMatrixItem(ctx)["instance_crn"].(string)
+	return instanceID, nil
+}
+
 // GetDefaultIBMRegion returns the default region for IBM account
 // if not set by Env variable
 func GetDefaultIBMRegion(d *plugin.QueryData) string {
