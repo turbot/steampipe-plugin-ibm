@@ -17,7 +17,7 @@ from
   ibm_is_vpc;
 ```
 
-### List all vpcs having classic access
+### List all VPCs with classic access
 
 ```sql
 select
