@@ -110,7 +110,7 @@ func getRegion(ctx context.Context, d *transform.TransformData) (interface{}, er
 }
 
 // Transform used to get the instance_id column
-func getServiceInstanceId(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func getServiceInstanceID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	instanceID := plugin.GetMatrixItem(ctx)["instance_id"].(string)
 	return instanceID, nil
 }
