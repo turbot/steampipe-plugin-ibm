@@ -19,6 +19,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"ibm_account":                         tableIbmAccount(ctx),
 			"ibm_certificate_manager_certificate": tableIbmCertificateManagerCertificate(ctx),
 			"ibm_iam_access_group":                tableIbmIamAccessGroup(ctx),
+			"ibm_iam_access_group_policy":         tableIbmIamAccessGroupPolicy(ctx),
 			"ibm_iam_account_settings":            tableIbmAccountSettings(ctx),
 			"ibm_iam_api_key":                     tableIbmIamAPIKey(ctx),
 			"ibm_iam_my_api_key":                  tableIbmIamMyAPIKey(ctx),
