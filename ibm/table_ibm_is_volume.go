@@ -145,7 +145,7 @@ func getIsVolume(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 	result, resp, err := conn.GetVolumeWithContext(ctx, opts)
 	if err != nil {
 		plugin.Logger(ctx).Error("getIsVolume", "query_error", err, "resp", resp)
-		if err.Error() == "VSI not found" {
+		if err.Error() == "Volume not found" {
 			return nil, nil
 		}
 		return nil, err
