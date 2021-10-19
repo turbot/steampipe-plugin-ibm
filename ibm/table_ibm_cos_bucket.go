@@ -23,14 +23,15 @@ func tableCosBucket(ctx context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "Name of the bucket."},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date when the bucket was created."},
-			{Name: "acl", Type: proto.ColumnType_JSON, Description: "The access control list (ACL) of a bucket.", Hydrate: getBucketACL,Transform: transform.FromValue()},
-			{Name: "lifecycle_rules", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketLifecycle,Transform: transform.FromField("Rules")},
-			{Name: "retention", Type: proto.ColumnType_JSON, Description: "The retention configuration information of the bucket.", Hydrate: getBucketRetention,Transform: transform.FromValue()},
+			{Name: "acl", Type: proto.ColumnType_JSON, Description: "The access control list (ACL) of a bucket.", Hydrate: getBucketACL, Transform: transform.FromValue()},
+			{Name: "lifecycle_rules", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketLifecycle, Transform: transform.FromField("Rules")},
+			{Name: "retention", Type: proto.ColumnType_JSON, Description: "The retention configuration information of the bucket.", Hydrate: getBucketRetention, Transform: transform.FromValue()},
 			{Name: "sse_kp_customer_root_key_crn", Type: proto.ColumnType_STRING, Description: "The root key used by Key Protect to encrypt this bucket. This value must be the full CRN of the root key.", Hydrate: headBucket, Transform: transform.FromField("IBMSSEKPCrkId")},
 			{Name: "sse_kp_enabled", Type: proto.ColumnType_BOOL, Description: "Specifies whether the Bucket has Key Protect enabled.", Hydrate: headBucket, Transform: transform.FromField("IBMSSEKPEnabled")},
 			{Name: "versioning_enabled", Type: proto.ColumnType_BOOL, Description: "The versioning state of a bucket.", Hydrate: getBucketVersioning, Transform: transform.FromField("Status").Transform(handleNilString).Transform(transform.ToBool)},
 			{Name: "versioning_mfa_delete", Type: proto.ColumnType_BOOL, Description: "The MFA Delete status of the versioning state.", Hydrate: getBucketVersioning, Transform: transform.FromField("MFADelete").Transform(handleNilString).Transform(transform.ToBool)},
-			{Name: "website", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketWebsite,Transform: transform.FromValue()},
+			{Name: "public_access_block_configuration", Type: proto.ColumnType_JSON, Description: "The public access block configuration information of the bucket.", Hydrate: getBucketPublicAccessBlockConfiguration, Transform: transform.FromValue()},
+			{Name: "website", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketWebsite, Transform: transform.FromValue()},
 
 			// Standard columns
 			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.FromField("LocationConstraint"), Description: "The region of the bucket."},
@@ -188,7 +189,6 @@ func getBucketVersioning(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 
 	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
 
-
 	// Create Session
 	conn, err := cosService(ctx, d, location)
 	if err != nil {
@@ -223,7 +223,6 @@ func getBucketWebsite(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	bucket := h.Item.(*s3.BucketExtended)
 
 	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
-
 
 	// Create Session
 	conn, err := cosService(ctx, d, location)
@@ -277,3 +276,35 @@ func getBucketACL(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	return acl, nil
 }
 
+func getBucketPublicAccessBlockConfiguration(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getBucketPublicAccessBlockConfiguration")
+	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+
+	// Invalid service type
+	if serviceType != "cloud-object-storage" {
+		return nil, nil
+	}
+	bucket := h.Item.(*s3.BucketExtended)
+
+	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+
+	// Create Session
+	conn, err := cosService(ctx, d, location)
+	if err != nil {
+		return nil, err
+	}
+
+	params := &s3.GetPublicAccessBlockInput{
+		Bucket: bucket.Name,
+	}
+
+	result, err := conn.GetPublicAccessBlock(params)
+	if err != nil {
+		if strings.Contains(err.Error(), "NoSuchPublicAccessBlockConfiguration") {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return result, nil
+}
