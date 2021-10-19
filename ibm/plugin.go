@@ -31,6 +31,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"ibm_is_region":                       tableIbmIsRegion(ctx),
 			"ibm_is_security_group":               tableIbmIsSecurityGroup(ctx),
 			"ibm_is_subnet":                       tableIbmIsSubnet(ctx),
+			"ibm_is_volume":                       tableIbmIsVolume(ctx),
 			"ibm_is_vpc":                          tableIbmIsVpc(ctx),
 			"ibm_kms_key":                         tableIbmKmsKey(ctx),
 			"ibm_kms_key_ring":                    tableIbmKmsKeyRing(ctx),
