@@ -6,6 +6,7 @@ import (
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM/platform-services-go-sdk/atrackerv1"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
@@ -43,6 +44,66 @@ func kmsService(ctx context.Context, d *plugin.QueryData) (*kp.Client, error) {
 	}
 	// Save to cache
 	d.ConnectionManager.Cache.Set(cacheKey, service)
+	return service, nil
+}
+
+// ActivityTrackerService return the service for IBM Activity Tracker service
+func ActivityTrackerService(ctx context.Context, d *plugin.QueryData) (*atrackerv1.AtrackerV1, error) {
+	region := plugin.GetMatrixItem(ctx)["region"].(string)
+
+	// Load connection from cache, which preserves throttling protection etc
+	cacheKey := "ibm_activity_tracker"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*atrackerv1.AtrackerV1), nil
+	}
+
+	// Create region endpoint
+	endpoint := fmt.Sprintf("https://%s.atracker.cloud.ibm.com", region)
+
+	apiKey, err := configApiKey(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	// Instantiate the service with an API key based IAM authenticator
+	service, err := atrackerv1.NewAtrackerV1(&atrackerv1.AtrackerV1Options{
+		URL: endpoint,
+		Authenticator: &core.IamAuthenticator{
+			ApiKey: apiKey,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, service)
+
+	return service, nil
+}
+
+func ActivityTracker1Service(ctx context.Context, d *plugin.QueryData) (*atrackerv1.AtrackerV1, error) {
+	// Load connection from cache, which preserves throttling protection etc
+	cacheKey := "ibm_activity_tracker1"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*atrackerv1.AtrackerV1), nil
+	}
+
+	apiKey, err := configApiKey(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	serviceClientOptions := &atrackerv1.AtrackerV1Options{Authenticator: &core.IamAuthenticator{
+		ApiKey: apiKey,
+	}}
+	// Instantiate the service with an API key based IAM authenticator
+	service, err := atrackerv1.NewAtrackerV1UsingExternalConfig(serviceClientOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, service)
+
 	return service, nil
 }
 

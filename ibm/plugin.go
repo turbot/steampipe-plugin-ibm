@@ -35,6 +35,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"ibm_kms_key":                         tableIbmKmsKey(ctx),
 			"ibm_kms_key_ring":                    tableIbmKmsKeyRing(ctx),
 			"ibm_resource_group":                  tableIbmResourceGroup(ctx),
+			"ibm_atracker_target":                 tableIbmAtrackerTarget(ctx),
 		},
 	}
 	return p
