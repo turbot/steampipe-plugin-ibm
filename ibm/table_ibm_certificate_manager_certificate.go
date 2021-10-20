@@ -34,6 +34,7 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 			{Name: "serial_number", Type: proto.ColumnType_STRING, Description: "The serial number of a certificate."},
 			{Name: "certificate_manager_instance_id", Type: proto.ColumnType_STRING, Description: "The CRN of the certificate manager service instance.", Transform: transform.From(getServiceInstanceCRN)},
 			{Name: "algorithm", Type: proto.ColumnType_STRING, Description: "The Algorithm of a certificate."},
+			{Name: "auto_renew_enabled", Type: proto.ColumnType_BOOL, Description: "The automatic renewal status of the certificate.", Transform: transform.FromField("OrderPolicy.AutoRenewEnabled"), Default: false},
 			{Name: "begins_on", Type: proto.ColumnType_TIMESTAMP, Description: "The creation date of the certificate.", Transform: transform.FromField("BeginsOn").Transform(transform.UnixMsToTimestamp)},
 			{Name: "expires_on", Type: proto.ColumnType_TIMESTAMP, Description: "The expiration date of the certificate.", Transform: transform.FromField("ExpiresOn").Transform(transform.UnixMsToTimestamp)},
 			{Name: "domains", Type: proto.ColumnType_JSON, Description: "An array of valid domains for the issued certificate. The first domain is the primary domain, extra domains are secondary domains."},
@@ -43,7 +44,7 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 			{Name: "issuance_info", Type: proto.ColumnType_JSON, Description: "The issuance information of a certificate."},
 			{Name: "issuer", Type: proto.ColumnType_STRING, Description: "The issuer of the certificate."},
 			{Name: "key_algorithm", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the account ID."},
-			{Name: "order_policy", Type: proto.ColumnType_JSON, Description: "The order policy of the certificate."},
+			{Name: "order_policy_name", Type: proto.ColumnType_STRING, Description: "The order policy name of the certificate.", Transform: transform.FromField("OrderPolicy.Name")},
 			// Standard columns
 			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("ID").Transform(crnToAccountID), Description: "The account ID of this certificate."},
 			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.From(getRegion), Description: "The region of this certificate."},
