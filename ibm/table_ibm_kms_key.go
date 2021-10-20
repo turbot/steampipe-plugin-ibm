@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -59,6 +60,7 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 			{Name: "aliases", Type: proto.ColumnType_JSON, Description: "A list of key aliases."},
 			{Name: "dual_auth_delete", Type: proto.ColumnType_JSON, Description: "Metadata that indicates the status of a dual authorization policy on the key."},
 			{Name: "key_version", Type: proto.ColumnType_JSON, Description: "Properties associated with a specific key version."},
+			{Name: "rotation_policy", Type: proto.ColumnType_JSON, Description: "Key rotation policy.", Hydrate: getKmsKeyRotationPolicy, Transform: transform.FromValue()},
 
 			// Standard columns
 			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this key."},
@@ -159,6 +161,31 @@ func getKmsKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	data, err := conn.GetKeyMetadata(ctx, id)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_kms_key.listKmsKeys", "query_error", err)
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func getKmsKeyRotationPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	instanceID := plugin.GetMatrixItem(ctx)["instance_id"].(string)
+
+	id := h.Item.(kp.Key).ID
+
+	// Create service connection
+	conn, err := kmsService(ctx, d)
+	if err != nil {
+		plugin.Logger(ctx).Error("ibm_kms_key.getKmsKeyRotationPolicy", "connection_error", err)
+		return nil, err
+	}
+	conn.Config.InstanceID = instanceID
+
+	data, err := conn.GetRotationPolicy(ctx, id)
+	if err != nil {
+		if strings.Contains(err.Error(), "The user does not have access to the specified resource") || strings.Contains(err.Error(), "Not Found") {
+			return nil, nil
+		}
+		plugin.Logger(ctx).Error("ibm_kms_key.getKmsKeyRotationPolicy", "query_error", err)
 		return nil, err
 	}
 
