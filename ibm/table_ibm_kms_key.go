@@ -164,7 +164,7 @@ func getKmsKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 		return nil, err
 	}
 
-	return data, nil
+	return *data, nil
 }
 
 func getKmsKeyRotationPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -182,7 +182,7 @@ func getKmsKeyRotationPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 
 	data, err := conn.GetRotationPolicy(ctx, id)
 	if err != nil {
-		if strings.Contains(err.Error(), "The user does not have access to the specified resource") || strings.Contains(err.Error(), "Not Found") {
+		if strings.Contains(err.Error(), "Not Found") {
 			return nil, nil
 		}
 		plugin.Logger(ctx).Error("ibm_kms_key.getKmsKeyRotationPolicy", "query_error", err)
