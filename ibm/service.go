@@ -228,10 +228,10 @@ func resourceManagerService(ctx context.Context, d *plugin.QueryData) (*resource
 }
 
 func cosService(ctx context.Context, d *plugin.QueryData, region string) (*s3.S3, error) {
-	// region := plugin.GetMatrixItem(ctx)["region"].(string)
+
 	serviceInstanceID := plugin.GetMatrixItem(ctx)["instance_crn"].(string)
 	// Load connection from cache, which preserves throttling protection etc
-	cacheKey := "ibm_cos"+ region
+	cacheKey := "ibm_cos" + region
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
 		return cachedData.(*s3.S3), nil
 	}

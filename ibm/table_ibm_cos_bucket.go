@@ -23,14 +23,14 @@ func tableCosBucket(ctx context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "Name of the bucket."},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date when the bucket was created."},
-			{Name: "acl", Type: proto.ColumnType_JSON, Description: "The access control list (ACL) of a bucket.", Hydrate: getBucketACL, Transform: transform.FromValue()},
-			{Name: "lifecycle_rules", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketLifecycle, Transform: transform.FromField("Rules")},
-			{Name: "retention", Type: proto.ColumnType_JSON, Description: "The retention configuration information of the bucket.", Hydrate: getBucketRetention, Transform: transform.FromValue()},
 			{Name: "sse_kp_customer_root_key_crn", Type: proto.ColumnType_STRING, Description: "The root key used by Key Protect to encrypt this bucket. This value must be the full CRN of the root key.", Hydrate: headBucket, Transform: transform.FromField("IBMSSEKPCrkId")},
 			{Name: "sse_kp_enabled", Type: proto.ColumnType_BOOL, Description: "Specifies whether the Bucket has Key Protect enabled.", Hydrate: headBucket, Transform: transform.FromField("IBMSSEKPEnabled"), Default: false},
 			{Name: "versioning_enabled", Type: proto.ColumnType_BOOL, Description: "The versioning state of a bucket.", Hydrate: getBucketVersioning, Transform: transform.FromField("Status").Transform(handleNilString).Transform(transform.ToBool)},
 			{Name: "versioning_mfa_delete", Type: proto.ColumnType_BOOL, Description: "The MFA Delete status of the versioning state.", Hydrate: getBucketVersioning, Transform: transform.FromField("MFADelete").Transform(handleNilString).Transform(transform.ToBool)},
+			{Name: "acl", Type: proto.ColumnType_JSON, Description: "The access control list (ACL) of a bucket.", Hydrate: getBucketACL, Transform: transform.FromValue()},
+			{Name: "lifecycle_rules", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketLifecycle, Transform: transform.FromField("Rules")},
 			{Name: "public_access_block_configuration", Type: proto.ColumnType_JSON, Description: "The public access block configuration information of the bucket.", Hydrate: getBucketPublicAccessBlockConfiguration, Transform: transform.FromValue()},
+			{Name: "retention", Type: proto.ColumnType_JSON, Description: "The retention configuration information of the bucket.", Hydrate: getBucketRetention, Transform: transform.FromValue()},
 			{Name: "website", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketWebsite, Transform: transform.FromValue()},
 
 			// Standard columns
