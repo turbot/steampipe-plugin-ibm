@@ -189,5 +189,9 @@ func getKmsKeyRotationPolicy(ctx context.Context, d *plugin.QueryData, h *plugin
 		return nil, err
 	}
 
-	return data, nil
+	if data.CRN != "" {
+		return data, nil
+	}
+
+	return nil, nil
 }
