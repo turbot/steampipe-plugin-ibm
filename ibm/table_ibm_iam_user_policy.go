@@ -24,6 +24,7 @@ func tableIbmIamUserPolicy(ctx context.Context) *plugin.Table {
 		},
 		Columns: []*plugin.Column{
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The ID of the IAM user policy."},
+			{Name: "iam_id", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the user's IAM ID."},
 			{Name: "type", Type: proto.ColumnType_STRING, Description: "The policy type."},
 			{Name: "created_at", Type: proto.ColumnType_TIMESTAMP, Description: "The time when the policy was created.", Transform: transform.FromField("CreatedAt").Transform(ensureTimestamp)},
 			{Name: "description", Type: proto.ColumnType_STRING, Description: "The description of the IAM access group."},
@@ -37,6 +38,11 @@ func tableIbmIamUserPolicy(ctx context.Context) *plugin.Table {
 			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "ID of the account that this policy belongs to.", Hydrate: plugin.HydrateFunc(getAccountId).WithCache(), Transform: transform.FromValue()},
 		},
 	}
+}
+
+type userAccessPolicy struct {
+	iampolicymanagementv1.Policy
+	IamID string
 }
 
 //// LIST FUNCTION
@@ -72,7 +78,7 @@ func listUserPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	}
 
 	for _, i := range result.Policies {
-		d.StreamListItem(ctx, i)
+		d.StreamListItem(ctx, userAccessPolicy{i, userData.IamID})
 
 		// Context can be cancelled due to manual cancellation or the limit has been hit
 		if d.QueryStatus.RowsRemaining(ctx) == 0 {
