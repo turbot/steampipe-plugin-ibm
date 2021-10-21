@@ -1,3 +1,19 @@
+## v0.0.2 [2021-10-21]
+
+_What's new?_
+
+- New tables added
+  - [ibm_cis_domain](https://hub.steampipe.io/plugins/turbot/ibm/tables/ibm_cis_domain) ([#34](https://github.com/turbot/steampipe-plugin-ibm/pull/34))
+  - [ibm_cos_bucket](https://hub.steampipe.io/plugins/turbot/ibm/tables/ibm_cos_bucket) ([#13](https://github.com/turbot/steampipe-plugin-ibm/pull/13))
+  - [ibm_iam_access_group_policy](https://hub.steampipe.io/plugins/turbot/ibm/tables/ibm_iam_access_group_policy) ([#19](https://github.com/turbot/steampipe-plugin-ibm/pull/19))
+  - [ibm_is_volume](https://hub.steampipe.io/plugins/turbot/ibm/tables/ibm_is_volume`) ([#24](https://github.com/turbot/steampipe-plugin-ibm/pull/24))
+
+_Enhancements_
+
+- Updated: Add column `rotation_policy` to the `ibm_kms_key` table ([#31](https://github.com/turbot/steampipe-plugin-ibm/pull/31))
+- Updated: Add columns `order_policy_name` and `auto_renew_enabled` to the `ibm_certificate_manager_certificate` table ([#27](https://github.com/turbot/steampipe-plugin-ibm/pull/27))
+- Updated: Add column `iam_id` to the `ibm_iam_user_policy` table ([#17](https://github.com/turbot/steampipe-plugin-ibm/pull/17))
+
 ## v0.0.1 [2021-10-06]
 
 _What's new?_
