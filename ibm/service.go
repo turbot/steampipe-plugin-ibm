@@ -10,6 +10,7 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	"github.com/IBM/networking-go-sdk/globalloadbalancerv1"
 	"github.com/IBM/networking-go-sdk/zonessettingsv1"
 	"github.com/IBM/networking-go-sdk/zonesv1"
@@ -179,6 +180,41 @@ func cisGlobalLoadBalancerService(ctx context.Context, d *plugin.QueryData, zone
 	}
 	// Instantiate the service with an API key based IAM authenticator
 	service, err := globalloadbalancerv1.NewGlobalLoadBalancerV1(&globalloadbalancerv1.GlobalLoadBalancerV1Options{
+		Crn:            &serviceInstanceID,
+		ZoneIdentifier: &zoneId,
+		URL:            endpoint,
+		Authenticator: &core.IamAuthenticator{
+			ApiKey: apiKey,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, service)
+
+	return service, nil
+}
+
+// cisGlobalLoadBalancerService returns the service for IBM CIS DNS service
+func cisDnsRecordService(ctx context.Context, d *plugin.QueryData, zoneId string) (*dnsrecordsv1.DnsRecordsV1, error) {
+	serviceInstanceID := "crn:v1:bluemix:public:internet-svcs:global:a/76aa4877fab6436db86f121f62faf221:3e5dc1e0-3aea-4699-986e-e3b8f117c51d::"
+	endpoint := "https://api.cis.cloud.ibm.com"
+
+	// Load connection from cache, which preserves throttling protection etc
+	cacheKey := "cisDnsRecord"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*dnsrecordsv1.DnsRecordsV1), nil
+	}
+
+	// Fetch API key from config
+	apiKey, err := configApiKey(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	// Instantiate the service with an API key based IAM authenticator
+	service, err := dnsrecordsv1.NewDnsRecordsV1(&dnsrecordsv1.DnsRecordsV1Options{
 		Crn:            &serviceInstanceID,
 		ZoneIdentifier: &zoneId,
 		URL:            endpoint,

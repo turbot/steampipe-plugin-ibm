@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/IBM/networking-go-sdk/dnsrecordsv1"
 	"github.com/IBM/networking-go-sdk/globalloadbalancerv1"
 	"github.com/IBM/networking-go-sdk/zonessettingsv1"
 	"github.com/IBM/networking-go-sdk/zonesv1"
@@ -31,6 +32,7 @@ func tableIbmCISDomain(ctx context.Context) *plugin.Table {
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The zone name."},
 
 			// Other columns
+			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: getAccountId, Description: "An unique ID of the account.", Transform: transform.FromValue()},
 			{Name: "created_on", Type: proto.ColumnType_TIMESTAMP, Description: "The date and time that the zone was created."},
 			{Name: "modified_on", Type: proto.ColumnType_TIMESTAMP, Description: "The date and time that the zone was updated."},
 			{Name: "minimum_tls_version", Type: proto.ColumnType_STRING, Hydrate: getTlsMinimumVersion, Description: "The tls version of the zone.", Transform: transform.FromField("Value")},
@@ -38,7 +40,8 @@ func tableIbmCISDomain(ctx context.Context) *plugin.Table {
 			{Name: "original_dnshost", Type: proto.ColumnType_STRING, Description: "The original dns host of the zone."},
 			{Name: "status", Type: proto.ColumnType_STRING, Description: "The zone status."},
 			{Name: "paused", Type: proto.ColumnType_BOOL, Description: "Whether the zone is in paused state."},
-			{Name: "web_application_firewall", Type: proto.ColumnType_STRING, Hydrate: getWebApplicationFirewall, Description: "The web application firewall of the zone.", Transform: transform.FromField("Value")},
+			{Name: "web_application_firewall", Type: proto.ColumnType_STRING, Hydrate: getWebApplicationFirewall, Description: "The web application firewall status.", Transform: transform.FromField("Value")},
+			{Name: "dsn_records", Type: proto.ColumnType_JSON, Hydrate: getDnsRecords, Description: "DNS records for the domain.", Transform: transform.FromValue()},
 			{Name: "original_name_servers", Type: proto.ColumnType_JSON, Description: "The original name servers of the zone."},
 			{Name: "name_servers", Type: proto.ColumnType_JSON, Description: "The name servers of the zone."},
 			{Name: "global_load_balancer", Type: proto.ColumnType_JSON, Hydrate: getGlobalLoadBalancer, Description: "The global load balancer of the zone.", Transform: transform.FromValue()},
@@ -167,4 +170,24 @@ func getGlobalLoadBalancer(ctx context.Context, d *plugin.QueryData, h *plugin.H
 		return nil, err
 	}
 	return loadBalancers.Result, nil
+}
+
+func getDnsRecords(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	id := h.Item.(zonesv1.ZoneDetails).ID
+	// Create service connection
+	conn, err := cisDnsRecordService(ctx, d, *id)
+	if err != nil {
+		plugin.Logger(ctx).Error("getDnsRecords", "connection_error", err)
+		return nil, err
+	}
+
+	dnsRecords, resp, err := conn.ListAllDnsRecords(&dnsrecordsv1.ListAllDnsRecordsOptions{})
+	if err != nil {
+		plugin.Logger(ctx).Error("getDnsRecords", "query_error", err, "resp", resp)
+		if strings.Contains(err.Error(), "Not Found") {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return dnsRecords.Result, nil
 }
