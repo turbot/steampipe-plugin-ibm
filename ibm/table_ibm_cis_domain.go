@@ -40,7 +40,7 @@ func tableIbmCISDomain(ctx context.Context) *plugin.Table {
 			{Name: "original_dnshost", Type: proto.ColumnType_STRING, Description: "The original DNS host of the zone."},
 			{Name: "status", Type: proto.ColumnType_STRING, Description: "The zone status."},
 			{Name: "paused", Type: proto.ColumnType_BOOL, Description: "Whether the zone is in paused state."},
-			{Name: "web_application_firewall", Type: proto.ColumnType_STRING, Hydrate: getWebApplicationFirewall, Description: "The web application firewall status.", Transform: transform.FromField("Value")},
+			{Name: "web_application_firewall", Type: proto.ColumnType_STRING, Hydrate: getWebApplicationFirewall, Description: "The web application firewall state.", Transform: transform.FromField("Value")},
 			{Name: "dns_records", Type: proto.ColumnType_JSON, Hydrate: getDnsRecords, Description: "DNS records for the domain.", Transform: transform.FromValue()},
 			{Name: "original_name_servers", Type: proto.ColumnType_JSON, Description: "The original name servers of the zone."},
 			{Name: "name_servers", Type: proto.ColumnType_JSON, Description: "The name servers of the zone."},
