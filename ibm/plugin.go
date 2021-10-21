@@ -18,6 +18,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		TableMap: map[string]*plugin.Table{
 			"ibm_account":                         tableIbmAccount(ctx),
 			"ibm_certificate_manager_certificate": tableIbmCertificateManagerCertificate(ctx),
+			"ibm_cis_domain":                      tableIbmCISDomain(ctx),
 			"ibm_cos_bucket":                      tableCosBucket(ctx),
 			"ibm_iam_access_group":                tableIbmIamAccessGroup(ctx),
 			"ibm_iam_access_group_policy":         tableIbmIamAccessGroupPolicy(ctx),
