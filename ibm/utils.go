@@ -228,3 +228,11 @@ func crnToAccountID(ctx context.Context, d *transform.TransformData) (interface{
 	}
 	return accountID, nil
 }
+
+func handleNilString(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	value := types.SafeString(d.Value)
+	if value == "" {
+		return "false", nil
+	}
+	return value, nil
+}

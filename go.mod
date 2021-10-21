@@ -6,6 +6,7 @@ require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20210326111722-ed184b962226
 	github.com/IBM/go-sdk-core/v4 v4.10.0
 	github.com/IBM/go-sdk-core/v5 v5.7.0
+	github.com/IBM/ibm-cos-sdk-go v1.7.0
 	github.com/IBM/keyprotect-go-client v0.7.0
 	github.com/IBM/networking-go-sdk v0.23.1
 	github.com/IBM/platform-services-go-sdk v0.18.0

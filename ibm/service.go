@@ -5,6 +5,10 @@ import (
 	"fmt"
 
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/ibm-cos-sdk-go/aws"
+	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
+	"github.com/IBM/ibm-cos-sdk-go/aws/session"
+	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/networking-go-sdk/globalloadbalancerv1"
 	"github.com/IBM/networking-go-sdk/zonessettingsv1"
@@ -326,6 +330,36 @@ func resourceManagerService(ctx context.Context, d *plugin.QueryData) (*resource
 	if err != nil {
 		return nil, err
 	}
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, service)
+	return service, nil
+}
+
+func cosService(ctx context.Context, d *plugin.QueryData, region string) (*s3.S3, error) {
+
+	serviceInstanceID := plugin.GetMatrixItem(ctx)["instance_crn"].(string)
+	// Load connection from cache, which preserves throttling protection etc
+	cacheKey := "ibm_cos" + region
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*s3.S3), nil
+	}
+	apiKey, err := configApiKey(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+	authEndpoint := "https://iam.cloud.ibm.com/identity/token"
+	serviceEndpoint := fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", region)
+
+	conf := aws.NewConfig().
+		WithEndpoint(serviceEndpoint).
+		WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(),
+			authEndpoint, apiKey, serviceInstanceID)).
+		WithS3ForcePathStyle(true)
+
+	sess := session.Must(session.NewSession())
+
+	service := s3.New(sess, conf)
+
 	// Save to cache
 	d.ConnectionManager.Cache.Set(cacheKey, service)
 	return service, nil

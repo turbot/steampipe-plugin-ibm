@@ -3,8 +3,8 @@ package ibm
 import (
 	"context"
 
-	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM/go-sdk-core/v4/core"
+	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
@@ -14,17 +14,17 @@ import (
 
 //// TABLE DEFINITION
 
-func tableIbmIamUserPolicy(ctx context.Context) *plugin.Table {
+func tableIbmIamAccessGroupPolicy(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "ibm_iam_user_policy",
-		Description: "User access policies in the IBM Cloud account.",
+		Name:        "ibm_iam_access_group_policy",
+		Description: "Group access policies in the IBM Cloud account.",
 		List: &plugin.ListConfig{
-			Hydrate:       listUserPolicy,
-			ParentHydrate: listIamUser,
+			Hydrate:       listGroupAccessPolicy,
+			ParentHydrate: listAccessGroup,
 		},
 		Columns: []*plugin.Column{
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The ID of the IAM user policy."},
-			{Name: "iam_id", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the user's IAM ID."},
+			{Name: "group_id", Type: proto.ColumnType_STRING, Description: "The ID of the IAM access group."},
 			{Name: "type", Type: proto.ColumnType_STRING, Description: "The policy type."},
 			{Name: "created_at", Type: proto.ColumnType_TIMESTAMP, Description: "The time when the policy was created.", Transform: transform.FromField("CreatedAt").Transform(ensureTimestamp)},
 			{Name: "description", Type: proto.ColumnType_STRING, Description: "The description of the IAM access group."},
@@ -40,23 +40,23 @@ func tableIbmIamUserPolicy(ctx context.Context) *plugin.Table {
 	}
 }
 
-type userAccessPolicy struct {
+type groupAccessPolicy struct {
 	iampolicymanagementv1.Policy
-	IamID string
+	GroupID string
 }
 
 //// LIST FUNCTION
 
-func listUserPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listGroupAccessPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	// Create service connection
 	conn, err := iamPolicyManagementService(ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_iam_user_policy.listUserPolicy", "connection_error", err)
+		plugin.Logger(ctx).Error("listGroupAccessPolicy", "connection_error", err)
 		return nil, err
 	}
 
-	// Get user details
-	userData := h.Item.(usermanagementv2.UserInfo)
+	// Get group details
+	group := h.Item.(iamaccessgroupsv2.Group)
 
 	// Get account details
 	getAccountIdCached := plugin.HydrateFunc(getAccountId).WithCache()
@@ -66,19 +66,19 @@ func listUserPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	}
 
 	opts := &iampolicymanagementv1.ListPoliciesOptions{
-		AccountID: core.StringPtr(accountID.(string)),
-		Type:      core.StringPtr("access"),
-		IamID:     core.StringPtr(userData.IamID),
+		AccountID:     core.StringPtr(accountID.(string)),
+		Type:          core.StringPtr("access"),
+		AccessGroupID: group.ID,
 	}
 
 	result, resp, err := conn.ListPoliciesWithContext(ctx, opts)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_iam_user_policy.listUserPolicy", "query_error", err, "resp", resp)
+		plugin.Logger(ctx).Error("listGroupAccessPolicy", "query_error", err, "resp", resp)
 		return nil, err
 	}
 
 	for _, i := range result.Policies {
-		d.StreamListItem(ctx, userAccessPolicy{i, userData.IamID})
+		d.StreamListItem(ctx, groupAccessPolicy{i, *group.ID})
 
 		// Context can be cancelled due to manual cancellation or the limit has been hit
 		if d.QueryStatus.RowsRemaining(ctx) == 0 {
