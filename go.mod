@@ -22,7 +22,7 @@ require (
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
 	github.com/turbot/go-kit v0.3.0
-	github.com/turbot/steampipe-plugin-sdk v1.7.0
+	github.com/turbot/steampipe-plugin-sdk v1.8.2
 	go.mongodb.org/mongo-driver v1.7.3 // indirect
 	google.golang.org/genproto v0.0.0-20201029200359-8ce4113da6f7 // indirect
 )
