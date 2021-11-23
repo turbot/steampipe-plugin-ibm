@@ -1,3 +1,14 @@
+## v0.0.3 [2021-11-23]
+
+_Enhancements_
+
+- Recompiled plugin with Go version 1.17 ([#39](https://github.com/turbot/steampipe-plugin-ibm/pull/39))
+- Recompile plugin with [steampipe-plugin-sdk v1.8.2](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v182--2021-11-22) ([#38](https://github.com/turbot/steampipe-plugin-ibm/pull/38))
+
+_Bug fixes_
+
+- Fixed the typo in the `ibm_is_volume` table docs ([#36](https://github.com/turbot/steampipe-plugin-ibm/pull/36))
+
 ## v0.0.2 [2021-10-21]
 
 _What's new?_
