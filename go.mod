@@ -1,6 +1,6 @@
 module github.com/turbot/steampipe-plugin-ibm
 
-go 1.17
+go 1.18
 
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20210326111722-ed184b962226
