@@ -8,9 +8,9 @@ import (
 	"github.com/IBM/networking-go-sdk/globalloadbalancerv1"
 	"github.com/IBM/networking-go-sdk/zonessettingsv1"
 	"github.com/IBM/networking-go-sdk/zonesv1"
-	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
 )
 
 //// TABLE DEFINITION
