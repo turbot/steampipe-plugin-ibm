@@ -55,3 +55,16 @@ from
   ibm_is_instance,
   jsonb_array_elements(disks) as d;
 ```
+
+### Get floating ips associated to the instances
+
+```sql
+select 
+  title,
+  fip -> 'target' ->> 'id' as "Network Interface Id",
+  fip ->> 'address' as "Floating Ip",
+  fip ->> 'created_at' as "Create Time" 
+from 
+  ibm_is_instance,
+  jsonb_array_elements(floating_ips) as fip;
+```

@@ -43,6 +43,7 @@ func tableIbmIsInstance(ctx context.Context) *plugin.Table {
 			{Name: "memory", Type: proto.ColumnType_INT, Description: "The amount of memory, truncated to whole gibibytes."},
 			{Name: "boot_volume_attachment", Type: proto.ColumnType_JSON, Description: "Specifies the boot volume attachment."},
 			{Name: "disks", Type: proto.ColumnType_JSON, Description: "A collection of the instance's disks."},
+			{Name: "floating_ips", Type: proto.ColumnType_JSON, Description: "Floating IPs allow inbound and outbound traffic from the Internet to an instance", Hydrate: getInstanceNetworkInterfaceFloatingIps, Transform: transform.FromValue()},
 			{Name: "gpu", Type: proto.ColumnType_JSON, Description: "The virtual server instance GPU configuration."},
 			{Name: "image", Type: proto.ColumnType_JSON, Description: "The image the virtual server instance was provisioned from."},
 			{Name: "network_interfaces", Type: proto.ColumnType_JSON, Description: "A collection of the virtual server instance's network interfaces, including the primary network interface."},
@@ -191,4 +192,32 @@ func getInstanceTags(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	}
 
 	return tags, nil
+}
+
+func getInstanceNetworkInterfaceFloatingIps(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	region := plugin.GetMatrixItem(ctx)["region"].(string)
+	vpc := h.Item.(vpcv1.Instance)
+
+	conn, err := vpcService(ctx, d, region)
+	if err != nil {
+		plugin.Logger(ctx).Error("ibm_is_instance.getInstanceNetworkInterfaceFloatingIps", "connection_error", err)
+		return nil, err
+	}
+
+	networkInterfaces := *&vpc.NetworkInterfaces
+	networkInterfaceFloatingIp := []vpcv1.FloatingIP{}
+
+	for _, networkInterface := range networkInterfaces {
+		opts := conn.NewListInstanceNetworkInterfaceFloatingIpsOptions(*vpc.ID, *networkInterface.ID)
+
+		result, resp, err := conn.ListInstanceNetworkInterfaceFloatingIpsWithContext(ctx, opts)
+		if err != nil {
+			plugin.Logger(ctx).Error("ibm_is_instance.getInstanceNetworkInterfaceFloatingIps", "query_error", err, "resp", resp)
+			return nil, err
+		}
+
+		networkInterfaceFloatingIp = append(networkInterfaceFloatingIp, result.FloatingIps...)
+	}
+
+	return networkInterfaceFloatingIp, nil
 }
