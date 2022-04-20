@@ -38,7 +38,6 @@ func tableIbmIsVpc(ctx context.Context) *plugin.Table {
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The unique identifier for this VPC."},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The unique user-defined name for this VPC."},
 			// Other columns
-			{Name: "address_prefixes", Type: proto.ColumnType_JSON, Description: "Array of all address pool prefixes for this VPC.", Hydrate: getVpcAddressPrefixes, Transform: transform.FromValue()},
 			{Name: "classic_access", Type: proto.ColumnType_BOOL, Description: "Indicates whether this VPC is connected to Classic Infrastructure."},
 			{Name: "crn", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN"), Description: "The CRN for this VPC."},
 			{Name: "created_at", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("CreatedAt").Transform(ensureTimestamp), Description: "The date and time that the VPC was created."},
@@ -211,27 +210,4 @@ func getTags(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (i
 	}
 
 	return tags, nil
-}
-
-func getVpcAddressPrefixes(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
-	vpc := h.Item.(vpcv1.VPC)
-
-	// Create service connection
-	conn, err := vpcService(ctx, d, region)
-	if err != nil {
-		plugin.Logger(ctx).Error("ibm_is_vpc.getVpcAddressPrefixes", "connection_error", err)
-		return nil, err
-	}
-
-	opts := &vpcv1.ListVPCAddressPrefixesOptions{
-		VPCID: vpc.ID,
-	}
-
-	result, resp, err := conn.ListVPCAddressPrefixesWithContext(ctx, opts)
-	if err != nil {
-		plugin.Logger(ctx).Error("ibm_is_vpc.getVpcAddressPrefixes", "query_error", err, "resp", resp)
-		return nil, err
-	}
-	return result.AddressPrefixes, nil
 }
