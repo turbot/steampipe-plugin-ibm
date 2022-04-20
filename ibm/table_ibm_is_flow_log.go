@@ -154,7 +154,7 @@ func getFlowLogTags(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	vpc := h.Item.(vpcv1.FlowLogCollector)
 	conn, err := tagService(ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_is_flow_log.getFlowLogCollectorTags", "connection_error", err)
+		plugin.Logger(ctx).Error("ibm_is_flow_log.getFlowLogTags", "connection_error", err)
 		return nil, err
 	}
 
@@ -170,7 +170,7 @@ func getFlowLogTags(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	for {
 		result, resp, err := conn.ListTagsWithContext(ctx, opts)
 		if err != nil {
-			plugin.Logger(ctx).Error("ibm_is_flow_log.getFlowLogCollectorTags", "query_error", err, "resp", resp)
+			plugin.Logger(ctx).Error("ibm_is_flow_log.getFlowLogTags", "query_error", err, "resp", resp)
 			return nil, err
 		}
 		for _, i := range result.Items {
