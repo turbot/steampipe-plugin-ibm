@@ -60,7 +60,7 @@ from
 
 ```sql
 select 
-  title,
+  name,
   fip -> 'target' ->> 'id' as "Network Interface Id",
   fip ->> 'address' as "Floating Ip",
   fip ->> 'created_at' as "Create Time" 
