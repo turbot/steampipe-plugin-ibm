@@ -61,9 +61,9 @@ from
 ```sql
 select 
   name,
-  fip -> 'target' ->> 'id' as "Network Interface Id",
-  fip ->> 'address' as "Floating Ip",
-  fip ->> 'created_at' as "Create Time" 
+  fip -> 'target' ->> 'id' as network_interface_id,
+  fip ->> 'address' as floating_ip,
+  fip ->> 'created_at' as create_time 
 from 
   ibm_is_instance,
   jsonb_array_elements(floating_ips) as fip;
