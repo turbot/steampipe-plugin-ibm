@@ -204,7 +204,7 @@ func getInstanceNetworkInterfaceFloatingIps(ctx context.Context, d *plugin.Query
 		return nil, err
 	}
 
-	networkInterfaces := *&vpc.NetworkInterfaces
+	networkInterfaces := vpc.NetworkInterfaces
 	networkInterfaceFloatingIp := []vpcv1.FloatingIP{}
 
 	for _, networkInterface := range networkInterfaces {
