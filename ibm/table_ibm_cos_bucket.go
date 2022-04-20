@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
@@ -23,20 +24,20 @@ func tableCosBucket(ctx context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "Name of the bucket."},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date when the bucket was created."},
-			{Name: "owner_id", Type: proto.ColumnType_STRING, Description: "The ID of this bucket owner.", Transform: transform.FromField("Owner.ID")},
 			{Name: "sse_kp_customer_root_key_crn", Type: proto.ColumnType_STRING, Description: "The root key used by Key Protect to encrypt this bucket. This value must be the full CRN of the root key.", Hydrate: headBucket, Transform: transform.FromField("IBMSSEKPCrkId")},
 			{Name: "sse_kp_enabled", Type: proto.ColumnType_BOOL, Description: "Specifies whether the Bucket has Key Protect enabled.", Hydrate: headBucket, Transform: transform.FromField("IBMSSEKPEnabled"), Default: false},
 			{Name: "versioning_enabled", Type: proto.ColumnType_BOOL, Description: "The versioning state of a bucket.", Hydrate: getBucketVersioning, Transform: transform.FromField("Status").Transform(handleNilString).Transform(transform.ToBool)},
 			{Name: "versioning_mfa_delete", Type: proto.ColumnType_BOOL, Description: "The MFA Delete status of the versioning state.", Hydrate: getBucketVersioning, Transform: transform.FromField("MFADelete").Transform(handleNilString).Transform(transform.ToBool)},
 			{Name: "acl", Type: proto.ColumnType_JSON, Description: "The access control list (ACL) of a bucket.", Hydrate: getBucketACL, Transform: transform.FromValue()},
-			{Name: "cors_rules", Type: proto.ColumnType_JSON, Description: "The Cross-Origin Resource Sharing (CORS) configuration of a bucket.", Hydrate: getBucketCORSConfiguration, Transform: transform.FromValue()},
+			{Name: "cors_rules", Type: proto.ColumnType_JSON, Description: "The Cross-Origin Resource Sharing (CORS) configuration of a bucket.", Hydrate: getBucketCORSConfiguration, Transform: transform.FromField("CORSRules")},
 			{Name: "lifecycle_rules", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketLifecycle, Transform: transform.FromField("Rules")},
-			{Name: "logging_enabled", Type: proto.ColumnType_JSON, Description: "The logging information of the bucket.", Hydrate: getBucketLogging},
+			{Name: "logging_enabled", Type: proto.ColumnType_JSON, Description: "The logging information of the bucket.", Hydrate: getBucketLogging, Transform: transform.FromValue()},
 			{Name: "public_access_block_configuration", Type: proto.ColumnType_JSON, Description: "The public access block configuration information of the bucket.", Hydrate: getBucketPublicAccessBlockConfiguration, Transform: transform.FromValue()},
 			{Name: "retention", Type: proto.ColumnType_JSON, Description: "The retention configuration information of the bucket.", Hydrate: getBucketRetention, Transform: transform.FromValue()},
 			{Name: "website", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketWebsite, Transform: transform.FromValue()},
 
 			// Standard columns
+			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: getAccountId, Transform: transform.FromValue(), Description: "An alphanumeric value identifying the account ID."},
 			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.FromField("LocationConstraint"), Description: "The region of the bucket."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 		},
@@ -93,7 +94,8 @@ func headBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 	// Create Session
 	conn, err := cosService(ctx, d, location)
 	if err != nil {
@@ -125,7 +127,8 @@ func getBucketLifecycle(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 	// Create Session
 	conn, err := cosService(ctx, d, location)
 	if err != nil {
@@ -157,7 +160,8 @@ func getBucketRetention(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 	// Create Session
 	conn, err := cosService(ctx, d, location)
 	if err != nil {
@@ -190,7 +194,8 @@ func getBucketVersioning(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 
 	// Create Session
 	conn, err := cosService(ctx, d, location)
@@ -225,7 +230,8 @@ func getBucketWebsite(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 
 	// Create Session
 	conn, err := cosService(ctx, d, location)
@@ -259,7 +265,8 @@ func getBucketACL(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 
 	// Create Session
 	conn, err := cosService(ctx, d, location)
@@ -289,7 +296,8 @@ func getBucketPublicAccessBlockConfiguration(ctx context.Context, d *plugin.Quer
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 
 	// Create Session
 	conn, err := cosService(ctx, d, location)
@@ -322,7 +330,8 @@ func getBucketCORSConfiguration(ctx context.Context, d *plugin.QueryData, h *plu
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 
 	// Create Session
 	conn, err := cosService(ctx, d, location)
@@ -342,7 +351,7 @@ func getBucketCORSConfiguration(ctx context.Context, d *plugin.QueryData, h *plu
 		return nil, err
 	}
 
-	return result.CORSRules, nil
+	return result, nil
 }
 
 func getBucketLogging(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -354,8 +363,8 @@ func getBucketLogging(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 		return nil, nil
 	}
 	bucket := h.Item.(*s3.BucketExtended)
-
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 
 	// Create Session
 	conn, err := cosService(ctx, d, location)
@@ -369,11 +378,11 @@ func getBucketLogging(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 	result, err := conn.GetBucketLogging(params)
 	if err != nil {
-		// if strings.Contains(err.Error(), "NoSuchCORSConfiguration") {
-		// 	return nil, nil
-		// }
+		if strings.Contains(err.Error(), "403") {
+			return nil, nil
+		}
 		return nil, err
 	}
 
-	return result, nil
+	return result.LoggingEnabled, nil
 }
