@@ -37,10 +37,10 @@ where
 ```sql
 select
   name,
-  addressp ->> 'cidr' as "IP Range",
-  addressp -> 'zone' ->> 'name' as "Region",
-  addressp ->> 'created_at' as "Create Time",
-  addressp ->> 'is_default' as "Is default"
+  addressp ->> 'cidr' as "cidr",
+  addressp -> 'zone' ->> 'name' as "zone",
+  addressp ->> 'created_at' as "created_at",
+  addressp ->> 'is_default' as "is_default"
 from
   ibm_is_vpc,
   jsonb_array_elements(address_prefixes) addressp;
