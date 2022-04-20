@@ -23,15 +23,12 @@ func tableCosBucket(ctx context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "Name of the bucket."},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date when the bucket was created."},
-			{Name: "owner_id", Type: proto.ColumnType_STRING, Description: "The ID of this bucket owner.", Transform: transform.FromField("Owner.ID")},
 			{Name: "sse_kp_customer_root_key_crn", Type: proto.ColumnType_STRING, Description: "The root key used by Key Protect to encrypt this bucket. This value must be the full CRN of the root key.", Hydrate: headBucket, Transform: transform.FromField("IBMSSEKPCrkId")},
 			{Name: "sse_kp_enabled", Type: proto.ColumnType_BOOL, Description: "Specifies whether the Bucket has Key Protect enabled.", Hydrate: headBucket, Transform: transform.FromField("IBMSSEKPEnabled"), Default: false},
 			{Name: "versioning_enabled", Type: proto.ColumnType_BOOL, Description: "The versioning state of a bucket.", Hydrate: getBucketVersioning, Transform: transform.FromField("Status").Transform(handleNilString).Transform(transform.ToBool)},
 			{Name: "versioning_mfa_delete", Type: proto.ColumnType_BOOL, Description: "The MFA Delete status of the versioning state.", Hydrate: getBucketVersioning, Transform: transform.FromField("MFADelete").Transform(handleNilString).Transform(transform.ToBool)},
 			{Name: "acl", Type: proto.ColumnType_JSON, Description: "The access control list (ACL) of a bucket.", Hydrate: getBucketACL, Transform: transform.FromValue()},
-			{Name: "cors_rules", Type: proto.ColumnType_JSON, Description: "The Cross-Origin Resource Sharing (CORS) configuration of a bucket.", Hydrate: getBucketCORSConfiguration, Transform: transform.FromValue()},
 			{Name: "lifecycle_rules", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketLifecycle, Transform: transform.FromField("Rules")},
-			{Name: "logging_enabled", Type: proto.ColumnType_JSON, Description: "The logging information of the bucket.", Hydrate: getBucketLogging},
 			{Name: "public_access_block_configuration", Type: proto.ColumnType_JSON, Description: "The public access block configuration information of the bucket.", Hydrate: getBucketPublicAccessBlockConfiguration, Transform: transform.FromValue()},
 			{Name: "retention", Type: proto.ColumnType_JSON, Description: "The retention configuration information of the bucket.", Hydrate: getBucketRetention, Transform: transform.FromValue()},
 			{Name: "website", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketWebsite, Transform: transform.FromValue()},
@@ -306,72 +303,6 @@ func getBucketPublicAccessBlockConfiguration(ctx context.Context, d *plugin.Quer
 		if strings.Contains(err.Error(), "NoSuchPublicAccessBlockConfiguration") {
 			return nil, nil
 		}
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func getBucketCORSConfiguration(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getBucketCORSConfiguration")
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
-
-	// Invalid service type
-	if serviceType != "cloud-object-storage" {
-		return nil, nil
-	}
-	bucket := h.Item.(*s3.BucketExtended)
-
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
-
-	// Create Session
-	conn, err := cosService(ctx, d, location)
-	if err != nil {
-		return nil, err
-	}
-
-	params := &s3.GetBucketCorsInput{
-		Bucket: bucket.Name,
-	}
-
-	result, err := conn.GetBucketCors(params)
-	if err != nil {
-		if strings.Contains(err.Error(), "NoSuchCORSConfiguration") {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return result.CORSRules, nil
-}
-
-func getBucketLogging(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("getBucketLogging")
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
-
-	// Invalid service type
-	if serviceType != "cloud-object-storage" {
-		return nil, nil
-	}
-	bucket := h.Item.(*s3.BucketExtended)
-
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
-
-	// Create Session
-	conn, err := cosService(ctx, d, location)
-	if err != nil {
-		return nil, err
-	}
-
-	params := &s3.GetBucketLoggingInput{
-		Bucket: bucket.Name,
-	}
-
-	result, err := conn.GetBucketLogging(params)
-	if err != nil {
-		// if strings.Contains(err.Error(), "NoSuchCORSConfiguration") {
-		// 	return nil, nil
-		// }
 		return nil, err
 	}
 
