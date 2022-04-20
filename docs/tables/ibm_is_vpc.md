@@ -31,3 +31,17 @@ from
 where
   classic_access;
 ```
+
+### List address prefix details for VPCs
+
+```sql
+select
+  name,
+  addressp ->> 'cidr' as "cidr",
+  addressp -> 'zone' ->> 'name' as "zone",
+  addressp ->> 'created_at' as "created_at",
+  addressp ->> 'is_default' as "is_default"
+from
+  ibm_is_vpc,
+  jsonb_array_elements(address_prefixes) addressp;
+```
