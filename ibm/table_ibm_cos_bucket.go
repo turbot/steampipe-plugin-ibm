@@ -109,7 +109,7 @@ func headBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	lifecycle, err := conn.HeadBucket(params)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_cos_bucket.headBucket", "query_error", err)
-		if strings.Contains(err.Error(), "Not Found") {
+		if strings.Contains(err.Error(), "Not Found") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
@@ -142,7 +142,7 @@ func getBucketLifecycle(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	lifecycle, err := conn.GetBucketLifecycleConfiguration(params)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_cos_bucket.getBucketLifecycle", "query_error", err)
-		if strings.Contains(err.Error(), "lifecycle configuration does not exist") {
+		if strings.Contains(err.Error(), "lifecycle configuration does not exist") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
@@ -175,7 +175,7 @@ func getBucketRetention(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	retention, err := conn.GetBucketProtectionConfiguration(params)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_cos_bucket.getBucketRetention", "query_error", err)
-		if strings.Contains(err.Error(), "lifecycle configuration does not exist") {
+		if strings.Contains(err.Error(), "lifecycle configuration does not exist") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
@@ -210,7 +210,7 @@ func getBucketVersioning(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	versioning, err := conn.GetBucketVersioning(params)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_cos_bucket.getBucketVersioning", "query_error", err)
-		if strings.Contains(err.Error(), "bucket does not exist") {
+		if strings.Contains(err.Error(), "bucket does not exist") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
@@ -246,7 +246,7 @@ func getBucketWebsite(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	website, err := conn.GetBucketWebsite(params)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_cos_bucket.getBucketWebsite", "query_error", err)
-		if strings.Contains(err.Error(), "bucket does not have a website configuration") {
+		if strings.Contains(err.Error(), "bucket does not have a website configuration") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
@@ -280,6 +280,10 @@ func getBucketACL(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 
 	acl, err := conn.GetBucketAcl(params)
 	if err != nil {
+		plugin.Logger(ctx).Error("ibm_cos_bucket.getBucketAcl", "query_error", err)
+		if strings.Contains(err.Error(), "403") {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -311,7 +315,7 @@ func getBucketPublicAccessBlockConfiguration(ctx context.Context, d *plugin.Quer
 
 	result, err := conn.GetPublicAccessBlock(params)
 	if err != nil {
-		if strings.Contains(err.Error(), "NoSuchPublicAccessBlockConfiguration") {
+		if strings.Contains(err.Error(), "NoSuchPublicAccessBlockConfiguration") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
@@ -345,7 +349,7 @@ func getBucketCORSConfiguration(ctx context.Context, d *plugin.QueryData, h *plu
 
 	result, err := conn.GetBucketCors(params)
 	if err != nil {
-		if strings.Contains(err.Error(), "NoSuchCORSConfiguration") {
+		if strings.Contains(err.Error(), "NoSuchCORSConfiguration") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
