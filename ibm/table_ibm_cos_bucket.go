@@ -44,7 +44,8 @@ func tableCosBucket(ctx context.Context) *plugin.Table {
 
 func listBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	region := GetDefaultIBMRegion(d)
-	plugin.Logger(ctx).Trace("listBucket")
+	logger := plugin.Logger(ctx)
+	logger.Trace("listBucket")
 
 	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
 
@@ -56,23 +57,48 @@ func listBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	// Create service connection
 	conn, err := cosService(ctx, d, region)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_cos_bucket.listBucket", "connection_error", err)
+		logger.Error("ibm_cos_bucket.listBucket", "connection_error", err)
 		return nil, err
 	}
 
 	opt := &s3.ListBucketsExtendedInput{}
+	marker := ""
 
-	data, err := conn.ListBucketsExtended(opt)
-	if err != nil {
-		plugin.Logger(ctx).Error("ibm_cos_bucket.listBucket", "query_error", err)
-		return nil, err
+	// Retrieve the list of keys for instances.
+	maxKeys := int64(100)
+
+	// Reduce the basic request limit down if the user has only requested a small number of rows
+	limit := d.QueryContext.Limit
+	if d.QueryContext.Limit != nil {
+		if *limit < maxKeys {
+			maxKeys = *limit
+		}
 	}
-	for _, i := range data.Buckets {
-		d.StreamListItem(ctx, i)
+	opt.SetMaxKeys(maxKeys)
 
-		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
-			return nil, nil
+	for {
+		if marker != "" {
+			opt.SetMarker(marker)
+		}
+
+		data, err := conn.ListBucketsExtended(opt)
+		if err != nil {
+			logger.Error("ibm_cos_bucket.listBucket", "query_error", err)
+			return nil, err
+		}
+
+		for _, i := range data.Buckets {
+			d.StreamListItem(ctx, i)
+
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
+		}
+
+		marker = *data.Marker
+		if marker == "" {
+			break
 		}
 	}
 	return nil, nil

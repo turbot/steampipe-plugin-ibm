@@ -375,7 +375,7 @@ func cosService(ctx context.Context, d *plugin.QueryData, region string) (*s3.S3
 
 	serviceInstanceID := plugin.GetMatrixItem(ctx)["instance_crn"].(string)
 	// Load connection from cache, which preserves throttling protection etc
-	cacheKey := "ibm_cos" + region
+	cacheKey := "ibm_cos" + region + serviceInstanceID
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
 		return cachedData.(*s3.S3), nil
 	}
