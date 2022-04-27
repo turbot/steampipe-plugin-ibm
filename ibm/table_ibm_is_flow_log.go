@@ -18,7 +18,7 @@ func tableIbmIsFlowLog(ctx context.Context) *plugin.Table {
 		Description:   "Flow Logs for VPC enable the collection, storage, and presentation of information about the Internet Protocol (IP) traffic going to and from network interfaces within your Virtual Private Cloud (VPC).",
 		GetMatrixItem: BuildRegionList,
 		List: &plugin.ListConfig{
-			Hydrate: listIsFlowLog,
+			Hydrate: listIsFlowLogs,
 			KeyColumns: []*plugin.KeyColumn{
 				{
 					Name:    "name",
@@ -60,7 +60,7 @@ func tableIbmIsFlowLog(ctx context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listIsFlowLog(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listIsFlowLogs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	region := plugin.GetMatrixItem(ctx)["region"].(string)
 
 	// Create service connection
