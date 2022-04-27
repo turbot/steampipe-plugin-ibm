@@ -61,3 +61,15 @@ from
 where
   not auto_delete;
 ```
+
+### List flow logs with their corresponding VPC details
+
+```sql
+select 
+  id, 
+  name, 
+  vpc ->> 'id' as vpc_id, 
+  vpc ->> 'name' as vpc_name 
+from 
+  ibm_is_flow_log;
+```
