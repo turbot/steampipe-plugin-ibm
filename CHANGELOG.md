@@ -1,3 +1,17 @@
+## v0.1.0 [2022-04-28]
+
+_What's new?_
+
+- New tables added
+  - [ibm_is_flow_log](https://hub.steampipe.io/plugins/turbot/ibm/tables/ibm_is_flow_log) ([#50](https://github.com/turbot/steampipe-plugin-ibm/pull/50))
+
+_Enhancements_
+
+- Recompiled plugin with [steampipe-plugin-sdk v3.1.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v310--2022-03-30) and Go version `1.18`. ([#46](https://github.com/turbot/steampipe-plugin-ibm/pull/46))
+- Added support for native Linux ARM and Mac M1 builds. ([#52](https://github.com/turbot/steampipe-plugin-ibm/pull/52))
+- Added column `floating_ips` to `ibm_is_instance` table. ([#47](https://github.com/turbot/steampipe-plugin-ibm/pull/47))
+- Added column `address_prefixes` to `ibm_is_vpc` table. ([#48](https://github.com/turbot/steampipe-plugin-ibm/pull/48))
+
 ## v0.0.3 [2021-11-23]
 
 _Enhancements_
