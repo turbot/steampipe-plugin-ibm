@@ -2,6 +2,7 @@ package ibm
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
@@ -28,12 +29,15 @@ func tableCosBucket(ctx context.Context) *plugin.Table {
 			{Name: "versioning_enabled", Type: proto.ColumnType_BOOL, Description: "The versioning state of a bucket.", Hydrate: getBucketVersioning, Transform: transform.FromField("Status").Transform(handleNilString).Transform(transform.ToBool)},
 			{Name: "versioning_mfa_delete", Type: proto.ColumnType_BOOL, Description: "The MFA Delete status of the versioning state.", Hydrate: getBucketVersioning, Transform: transform.FromField("MFADelete").Transform(handleNilString).Transform(transform.ToBool)},
 			{Name: "acl", Type: proto.ColumnType_JSON, Description: "The access control list (ACL) of a bucket.", Hydrate: getBucketACL, Transform: transform.FromValue()},
+			{Name: "cors_rules", Type: proto.ColumnType_JSON, Description: "The Cross-Origin Resource Sharing (CORS) configuration of a bucket.", Hydrate: getBucketCORSConfiguration, Transform: transform.FromField("CORSRules")},
 			{Name: "lifecycle_rules", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketLifecycle, Transform: transform.FromField("Rules")},
+			{Name: "logging_enabled", Type: proto.ColumnType_JSON, Description: "The logging information of the bucket.", Hydrate: getBucketLogging, Transform: transform.FromValue()},
 			{Name: "public_access_block_configuration", Type: proto.ColumnType_JSON, Description: "The public access block configuration information of the bucket.", Hydrate: getBucketPublicAccessBlockConfiguration, Transform: transform.FromValue()},
 			{Name: "retention", Type: proto.ColumnType_JSON, Description: "The retention configuration information of the bucket.", Hydrate: getBucketRetention, Transform: transform.FromValue()},
 			{Name: "website", Type: proto.ColumnType_JSON, Description: "The lifecycle configuration information of the bucket.", Hydrate: getBucketWebsite, Transform: transform.FromValue()},
 
 			// Standard columns
+			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: getAccountId, Transform: transform.FromValue(), Description: "An alphanumeric value identifying the account ID."},
 			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.FromField("LocationConstraint"), Description: "The region of the bucket."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 		},
@@ -44,7 +48,8 @@ func tableCosBucket(ctx context.Context) *plugin.Table {
 
 func listBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	region := GetDefaultIBMRegion(d)
-	plugin.Logger(ctx).Trace("listBucket")
+	logger := plugin.Logger(ctx)
+	logger.Trace("listBucket")
 
 	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
 
@@ -56,23 +61,48 @@ func listBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	// Create service connection
 	conn, err := cosService(ctx, d, region)
 	if err != nil {
-		plugin.Logger(ctx).Error("ibm_cos_bucket.listBucket", "connection_error", err)
+		logger.Error("ibm_cos_bucket.listBucket", "connection_error", err)
 		return nil, err
 	}
 
 	opt := &s3.ListBucketsExtendedInput{}
+	marker := ""
 
-	data, err := conn.ListBucketsExtended(opt)
-	if err != nil {
-		plugin.Logger(ctx).Error("ibm_cos_bucket.listBucket", "query_error", err)
-		return nil, err
+	// Retrieve the list of keys for instances.
+	maxKeys := int64(100)
+
+	// Reduce the basic request limit down if the user has only requested a small number of rows
+	limit := d.QueryContext.Limit
+	if d.QueryContext.Limit != nil {
+		if *limit < maxKeys {
+			maxKeys = *limit
+		}
 	}
-	for _, i := range data.Buckets {
-		d.StreamListItem(ctx, i)
+	opt.SetMaxKeys(maxKeys)
 
-		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
-			return nil, nil
+	for {
+		if marker != "" {
+			opt.SetMarker(marker)
+		}
+
+		data, err := conn.ListBucketsExtended(opt)
+		if err != nil {
+			logger.Error("ibm_cos_bucket.listBucket", "query_error", err)
+			return nil, err
+		}
+
+		for _, i := range data.Buckets {
+			d.StreamListItem(ctx, i)
+
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
+		}
+
+		marker = *data.Marker
+		if marker == "" {
+			break
 		}
 	}
 	return nil, nil
@@ -90,7 +120,8 @@ func headBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 	// Create Session
 	conn, err := cosService(ctx, d, location)
 	if err != nil {
@@ -104,7 +135,7 @@ func headBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	lifecycle, err := conn.HeadBucket(params)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_cos_bucket.headBucket", "query_error", err)
-		if strings.Contains(err.Error(), "Not Found") {
+		if strings.Contains(err.Error(), "Not Found") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
@@ -122,7 +153,8 @@ func getBucketLifecycle(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 	// Create Session
 	conn, err := cosService(ctx, d, location)
 	if err != nil {
@@ -136,7 +168,7 @@ func getBucketLifecycle(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	lifecycle, err := conn.GetBucketLifecycleConfiguration(params)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_cos_bucket.getBucketLifecycle", "query_error", err)
-		if strings.Contains(err.Error(), "lifecycle configuration does not exist") {
+		if strings.Contains(err.Error(), "lifecycle configuration does not exist") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
@@ -154,7 +186,8 @@ func getBucketRetention(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 	// Create Session
 	conn, err := cosService(ctx, d, location)
 	if err != nil {
@@ -168,7 +201,7 @@ func getBucketRetention(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 	retention, err := conn.GetBucketProtectionConfiguration(params)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_cos_bucket.getBucketRetention", "query_error", err)
-		if strings.Contains(err.Error(), "lifecycle configuration does not exist") {
+		if strings.Contains(err.Error(), "lifecycle configuration does not exist") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
@@ -187,7 +220,8 @@ func getBucketVersioning(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 
 	// Create Session
 	conn, err := cosService(ctx, d, location)
@@ -202,7 +236,7 @@ func getBucketVersioning(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 	versioning, err := conn.GetBucketVersioning(params)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_cos_bucket.getBucketVersioning", "query_error", err)
-		if strings.Contains(err.Error(), "bucket does not exist") {
+		if strings.Contains(err.Error(), "bucket does not exist") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
@@ -222,7 +256,8 @@ func getBucketWebsite(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 
 	// Create Session
 	conn, err := cosService(ctx, d, location)
@@ -237,7 +272,7 @@ func getBucketWebsite(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	website, err := conn.GetBucketWebsite(params)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_cos_bucket.getBucketWebsite", "query_error", err)
-		if strings.Contains(err.Error(), "bucket does not have a website configuration") {
+		if strings.Contains(err.Error(), "bucket does not have a website configuration") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
@@ -256,7 +291,8 @@ func getBucketACL(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 
 	// Create Session
 	conn, err := cosService(ctx, d, location)
@@ -270,6 +306,10 @@ func getBucketACL(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 
 	acl, err := conn.GetBucketAcl(params)
 	if err != nil {
+		plugin.Logger(ctx).Error("ibm_cos_bucket.getBucketAcl", "query_error", err)
+		if strings.Contains(err.Error(), "403") {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -286,7 +326,8 @@ func getBucketPublicAccessBlockConfiguration(ctx context.Context, d *plugin.Quer
 	}
 	bucket := h.Item.(*s3.BucketExtended)
 
-	location := strings.TrimSuffix(*bucket.LocationConstraint, "-smart")
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
 
 	// Create Session
 	conn, err := cosService(ctx, d, location)
@@ -300,11 +341,78 @@ func getBucketPublicAccessBlockConfiguration(ctx context.Context, d *plugin.Quer
 
 	result, err := conn.GetPublicAccessBlock(params)
 	if err != nil {
-		if strings.Contains(err.Error(), "NoSuchPublicAccessBlockConfiguration") {
+		if strings.Contains(err.Error(), "NoSuchPublicAccessBlockConfiguration") || strings.Contains(err.Error(), "403") {
 			return nil, nil
 		}
 		return nil, err
 	}
 
 	return result, nil
+}
+
+func getBucketCORSConfiguration(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getBucketCORSConfiguration")
+	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+
+	// Invalid service type
+	if serviceType != "cloud-object-storage" {
+		return nil, nil
+	}
+	bucket := h.Item.(*s3.BucketExtended)
+
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
+
+	// Create Session
+	conn, err := cosService(ctx, d, location)
+	if err != nil {
+		return nil, err
+	}
+
+	params := &s3.GetBucketCorsInput{
+		Bucket: bucket.Name,
+	}
+
+	result, err := conn.GetBucketCors(params)
+	if err != nil {
+		if strings.Contains(err.Error(), "NoSuchCORSConfiguration") || strings.Contains(err.Error(), "403") {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func getBucketLogging(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("getBucketLogging")
+	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+
+	// Invalid service type
+	if serviceType != "cloud-object-storage" {
+		return nil, nil
+	}
+	bucket := h.Item.(*s3.BucketExtended)
+	r := regexp.MustCompile(`-smart|-standard|-vault|-cold`)
+	location := string(r.ReplaceAllString(*bucket.LocationConstraint, ""))
+
+	// Create Session
+	conn, err := cosService(ctx, d, location)
+	if err != nil {
+		return nil, err
+	}
+
+	params := &s3.GetBucketLoggingInput{
+		Bucket: bucket.Name,
+	}
+
+	result, err := conn.GetBucketLogging(params)
+	if err != nil {
+		if strings.Contains(err.Error(), "403") {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return result.LoggingEnabled, nil
 }
