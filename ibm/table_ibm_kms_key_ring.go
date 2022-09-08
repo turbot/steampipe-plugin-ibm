@@ -14,7 +14,7 @@ func tableIbmKmsKeyRing(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_kms_key_ring",
 		Description:   "A key ring is a collection of leys in an IBM cloud location.",
-		GetMatrixItem: BuildServiceInstanceList,
+		GetMatrixItemFunc: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listKmsKeyRings,
 			KeyColumns: []*plugin.KeyColumn{

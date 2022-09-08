@@ -16,7 +16,7 @@ func tableIbmIsFlowLog(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_is_flow_log",
 		Description:   "Flow Logs for VPC enable the collection, storage, and presentation of information about the Internet Protocol (IP) traffic going to and from network interfaces within your Virtual Private Cloud (VPC).",
-		GetMatrixItem: BuildRegionList,
+		GetMatrixItemFunc: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listIsFlowLogs,
 			KeyColumns: []*plugin.KeyColumn{

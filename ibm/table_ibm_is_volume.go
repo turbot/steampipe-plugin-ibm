@@ -16,7 +16,7 @@ func tableIbmIsVolume(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_is_volume",
 		Description:   "VPC block storage volume.",
-		GetMatrixItem: BuildRegionList,
+		GetMatrixItemFunc: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listIsVolumes,
 			KeyColumns: []*plugin.KeyColumn{

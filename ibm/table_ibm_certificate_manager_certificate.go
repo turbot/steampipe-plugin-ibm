@@ -16,7 +16,7 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_certificate_manager_certificate",
 		Description:   "Retrieve the details of an existing certificate instance resource and lists all the certificates.",
-		GetMatrixItem: BuildServiceInstanceList,
+		GetMatrixItemFunc: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listCertificate,
 			KeyColumns: []*plugin.KeyColumn{

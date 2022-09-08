@@ -16,7 +16,7 @@ func tableIbmIsInstance(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_is_instance",
 		Description:   "A VPC is a virtual network that belongs to an account and provides logical isolation from other networks.",
-		GetMatrixItem: BuildRegionList,
+		GetMatrixItemFunc: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listIsInstance,
 			KeyColumns: []*plugin.KeyColumn{

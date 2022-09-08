@@ -16,7 +16,7 @@ func tableIbmIsSubnet(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_is_subnet",
 		Description:   "Subnets are contiguous ranges of IP addresses specified in CIDR block notation. Each subnet is within a particular zone and cannot span multiple zones or regions.",
-		GetMatrixItem: BuildRegionList,
+		GetMatrixItemFunc: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listIsSubnet,
 		},

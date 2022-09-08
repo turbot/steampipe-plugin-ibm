@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/steampipe-plugin-sdk/v4/connection"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 )
@@ -27,28 +26,27 @@ func Regions() []string {
 	}
 }
 
-var pluginQueryData *plugin.QueryData
+// var pluginQueryData *plugin.QueryData
 
-func init() {
-	pluginQueryData = &plugin.QueryData{
-		ConnectionManager: connection.NewManager(),
-	}
-}
+// func init() {
+// 	pluginQueryData = &plugin.QueryData{
+// 		ConnectionManager: connection.NewManager(),
+// 	}
+// }
 
 // BuildRegionList :: return a list of matrix items, one per region specified in the connection config
-func BuildRegionList(_ context.Context, connection *plugin.Connection) []map[string]interface{} {
-	pluginQueryData.Connection = connection
+func BuildRegionList(_ context.Context, d *plugin.QueryData) []map[string]interface{} {
 
 	// cache matrix
 	cacheKey := "RegionListMatrix"
-	if cachedData, ok := pluginQueryData.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
 		return cachedData.([]map[string]interface{})
 	}
 
 	var allRegions []string
 
 	// retrieve regions from connection config
-	ibmConfig := GetConfig(connection)
+	ibmConfig := GetConfig(d.Connection)
 	if ibmConfig.Regions != nil {
 		regions := Regions()
 		for _, pattern := range ibmConfig.Regions {
@@ -75,19 +73,19 @@ func BuildRegionList(_ context.Context, connection *plugin.Connection) []map[str
 		}
 
 		// set cache
-		pluginQueryData.ConnectionManager.Cache.Set(cacheKey, matrix)
+		d.ConnectionManager.Cache.Set(cacheKey, matrix)
 
 		return matrix
 	}
 
 	// Search for region configured using env, or use default region (i.e. us-south)
-	defaultIBMRegion := GetDefaultIBMRegion(pluginQueryData)
+	defaultIBMRegion := GetDefaultIBMRegion(d)
 	matrix := []map[string]interface{}{
 		{"region": defaultIBMRegion},
 	}
 
 	// set cache
-	pluginQueryData.ConnectionManager.Cache.Set(cacheKey, matrix)
+	d.ConnectionManager.Cache.Set(cacheKey, matrix)
 
 	return matrix
 }

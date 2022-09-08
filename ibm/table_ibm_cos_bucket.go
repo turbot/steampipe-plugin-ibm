@@ -16,7 +16,7 @@ func tableCosBucket(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_cos_bucket",
 		Description:   "An IBM Cloud storage bucket.",
-		GetMatrixItem: BuildServiceInstanceList,
+		GetMatrixItemFunc: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listBucket,
 		},
