@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	kp "github.com/IBM/keyprotect-go-client"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -16,7 +16,7 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_kms_key",
 		Description:   "A key is a named object containing one or more key versions, along with metadata for the key.",
-		GetMatrixItem: BuildServiceInstanceList,
+		GetMatrixItemFunc: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listKmsKeys,
 			KeyColumns: []*plugin.KeyColumn{

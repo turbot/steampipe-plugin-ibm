@@ -5,9 +5,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -16,7 +16,7 @@ func tableIbmIsNetworkAcl(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_is_network_acl",
 		Description:   "Network ACL is an optional layer of security for your VPC that acts as a firewall for controlling traffic in and out of one or more subnets.",
-		GetMatrixItem: BuildRegionList,
+		GetMatrixItemFunc: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listIsNetworkAcl,
 		},

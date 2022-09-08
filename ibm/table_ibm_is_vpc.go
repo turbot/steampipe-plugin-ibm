@@ -7,9 +7,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -18,7 +18,7 @@ func tableIbmIsVpc(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_is_vpc",
 		Description:   "A VPC is a virtual network that belongs to an account and provides logical isolation from other networks.",
-		GetMatrixItem: BuildRegionList,
+		GetMatrixItemFunc: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listIsVpc,
 			KeyColumns: []*plugin.KeyColumn{

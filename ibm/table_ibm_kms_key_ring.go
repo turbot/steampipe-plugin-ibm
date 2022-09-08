@@ -3,9 +3,9 @@ package ibm
 import (
 	"context"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -14,7 +14,7 @@ func tableIbmKmsKeyRing(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_kms_key_ring",
 		Description:   "A key ring is a collection of leys in an IBM cloud location.",
-		GetMatrixItem: BuildServiceInstanceList,
+		GetMatrixItemFunc: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listKmsKeyRings,
 			KeyColumns: []*plugin.KeyColumn{

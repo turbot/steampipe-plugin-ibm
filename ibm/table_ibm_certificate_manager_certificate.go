@@ -5,9 +5,9 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/api/certificatemanager"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -16,7 +16,7 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_certificate_manager_certificate",
 		Description:   "Retrieve the details of an existing certificate instance resource and lists all the certificates.",
-		GetMatrixItem: BuildServiceInstanceList,
+		GetMatrixItemFunc: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listCertificate,
 			KeyColumns: []*plugin.KeyColumn{

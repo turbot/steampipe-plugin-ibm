@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -16,7 +16,7 @@ func tableCosBucket(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_cos_bucket",
 		Description:   "An IBM Cloud storage bucket.",
-		GetMatrixItem: BuildServiceInstanceList,
+		GetMatrixItemFunc: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listBucket,
 		},

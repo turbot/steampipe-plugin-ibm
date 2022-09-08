@@ -5,9 +5,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 
-	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -16,7 +16,7 @@ func tableIbmIsSecurityGroup(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:          "ibm_is_security_group",
 		Description:   "Security groups provide a way to apply IP filtering rules to instances in the associated VPC. With security groups, all traffic is denied by default, and rules added to security groups define which traffic the security group permits. Security group rules are stateful such that reverse traffic in response to allowed traffic is automatically permitted.",
-		GetMatrixItem: BuildRegionList,
+		GetMatrixItemFunc: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listIsSecurityGroup,
 		},
