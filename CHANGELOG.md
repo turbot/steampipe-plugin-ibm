@@ -2,7 +2,7 @@
 
 _Dependencies_
 
-- Recompile plugin with [steampipe-plugin-sdk v4.1.12](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v4112-2023-02-09) which fixes the query caching functionality. ([#68](https://github.com/turbot/steampipe-plugin-ibm/pull/68))
+- Recompiled plugin with [steampipe-plugin-sdk v4.1.12](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v4112-2023-02-09) which fixes the query caching functionality. ([#68](https://github.com/turbot/steampipe-plugin-ibm/pull/68))
 
 ## v0.3.0 [2022-09-28]
 
