@@ -86,7 +86,7 @@ func getIamRole(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData)
 
 	client := svc.IAMRoles()
 
-	quals := d.KeyColumnQuals
+	quals := d.EqualsQuals
 	id := quals["id"].GetStringValue()
 
 	// No inputs

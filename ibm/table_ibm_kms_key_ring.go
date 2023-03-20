@@ -52,7 +52,7 @@ func listKmsKeyRings(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	}
 
 	// Return if specified instanceID not matched
-	if d.KeyColumnQuals["instance_id"] != nil && d.KeyColumnQuals["instance_id"].GetStringValue() != instanceID {
+	if d.EqualsQuals["instance_id"] != nil && d.EqualsQuals["instance_id"].GetStringValue() != instanceID {
 		return nil, nil
 	}
 
@@ -73,7 +73,7 @@ func listKmsKeyRings(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 		d.StreamListItem(ctx, i)
 
 		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}

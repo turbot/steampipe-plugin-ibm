@@ -88,7 +88,7 @@ func listIsInstanceDisk(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 		d.StreamListItem(ctx, instanceDiskInfo{i, *instanceData.ID})
 
 		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -107,8 +107,8 @@ func getIsInstanceDisk(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		plugin.Logger(ctx).Error("ibm_is_instance_disk.getIsInstanceDisk", "connection_error", err)
 		return nil, err
 	}
-	id := d.KeyColumnQuals["id"].GetStringValue()
-	instanceId := d.KeyColumnQuals["instance_id"].GetStringValue()
+	id := d.EqualsQuals["id"].GetStringValue()
+	instanceId := d.EqualsQuals["instance_id"].GetStringValue()
 
 	// No inputs
 	if id == "" && instanceId == "" {

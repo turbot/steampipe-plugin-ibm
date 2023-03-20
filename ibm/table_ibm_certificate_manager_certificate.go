@@ -68,7 +68,7 @@ func listCertificate(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	}
 
 	// Return if specified instanceID not matched
-	if d.KeyColumnQuals["certificate_manager_instance_id"] != nil && d.KeyColumnQuals["certificate_manager_instance_id"].GetStringValue() != instanceCRN {
+	if d.EqualsQuals["certificate_manager_instance_id"] != nil && d.EqualsQuals["certificate_manager_instance_id"].GetStringValue() != instanceCRN {
 		return nil, nil
 	}
 
@@ -96,7 +96,7 @@ func listCertificate(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		d.StreamListItem(ctx, i)
 
 		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}

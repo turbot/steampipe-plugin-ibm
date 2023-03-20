@@ -64,7 +64,7 @@ func listIsRegion(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 		d.StreamListItem(ctx, i)
 
 		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -83,7 +83,7 @@ func getIsRegion(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 		plugin.Logger(ctx).Error("ibm_is_region.getIsRegion", "connection_error", err)
 		return nil, err
 	}
-	name := d.KeyColumnQuals["name"].GetStringValue()
+	name := d.EqualsQuals["name"].GetStringValue()
 
 	// No inputs
 	if name == "" {

@@ -78,12 +78,12 @@ func listResourceGroup(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 	}
 
 	// Additional filters
-	if d.KeyColumnQuals["name"] != nil {
-		opts.SetName(d.KeyColumnQuals["name"].GetStringValue())
+	if d.EqualsQuals["name"] != nil {
+		opts.SetName(d.EqualsQuals["name"].GetStringValue())
 	}
 
-	if d.KeyColumnQuals["is_default"] != nil {
-		opts.SetDefault(d.KeyColumnQuals["is_default"].GetBoolValue())
+	if d.EqualsQuals["is_default"] != nil {
+		opts.SetDefault(d.EqualsQuals["is_default"].GetBoolValue())
 	}
 
 	// Non-Equals Qual Map handling
@@ -108,7 +108,7 @@ func listResourceGroup(ctx context.Context, d *plugin.QueryData, h *plugin.Hydra
 		d.StreamListItem(ctx, i)
 
 		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}

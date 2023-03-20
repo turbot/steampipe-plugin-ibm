@@ -86,7 +86,7 @@ func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	}
 
 	// Return if specified instanceID not matched
-	if d.KeyColumnQuals["instance_id"] != nil && d.KeyColumnQuals["instance_id"].GetStringValue() != instanceID {
+	if d.EqualsQuals["instance_id"] != nil && d.EqualsQuals["instance_id"].GetStringValue() != instanceID {
 		return nil, nil
 	}
 
@@ -99,8 +99,8 @@ func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	conn.Config.InstanceID = instanceID
 
 	// Additional filters
-	if d.KeyColumnQuals["key_ring_id"] != nil {
-		conn.Config.KeyRing = d.KeyColumnQuals["key_ring_id"].GetStringValue()
+	if d.EqualsQuals["key_ring_id"] != nil {
+		conn.Config.KeyRing = d.EqualsQuals["key_ring_id"].GetStringValue()
 	}
 
 	// Retrieve the list of keys for your account.
@@ -126,7 +126,7 @@ func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 		d.StreamListItem(ctx, i)
 
 		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -143,7 +143,7 @@ func getKmsKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 	if serviceType != "kms" {
 		return nil, nil
 	}
-	id := d.KeyColumnQuals["id"].GetStringValue()
+	id := d.EqualsQuals["id"].GetStringValue()
 
 	// No inputs
 	if id == "" {

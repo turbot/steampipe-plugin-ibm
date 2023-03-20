@@ -87,8 +87,8 @@ func listIsFlowLogs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 	}
 
 	// Additional filters
-	if d.KeyColumnQuals["name"] != nil {
-		opts.SetName(d.KeyColumnQuals["name"].GetStringValue())
+	if d.EqualsQuals["name"] != nil {
+		opts.SetName(d.EqualsQuals["name"].GetStringValue())
 	}
 
 	for {
@@ -104,7 +104,7 @@ func listIsFlowLogs(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 			d.StreamListItem(ctx, i)
 
 			// Context can be cancelled due to manual cancellation or the limit has been hit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -128,7 +128,7 @@ func getIsFlowLog(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 		plugin.Logger(ctx).Error("ibm_is_flow_log.getIsFlowLog", "connection_error", err)
 		return nil, err
 	}
-	id := d.KeyColumnQuals["id"].GetStringValue()
+	id := d.EqualsQuals["id"].GetStringValue()
 
 	// No inputs
 	if id == "" {

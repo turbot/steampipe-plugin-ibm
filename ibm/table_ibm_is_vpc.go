@@ -100,8 +100,8 @@ func listIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) 
 	}
 
 	// Equals Qual Map handling
-	if d.KeyColumnQuals["classic_access"] != nil {
-		opts.SetClassicAccess(d.KeyColumnQuals["classic_access"].GetBoolValue())
+	if d.EqualsQuals["classic_access"] != nil {
+		opts.SetClassicAccess(d.EqualsQuals["classic_access"].GetBoolValue())
 	}
 
 	// Non-Equals Qual Map handling
@@ -130,7 +130,7 @@ func listIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) 
 			d.StreamListItem(ctx, i)
 
 			// Context can be cancelled due to manual cancellation or the limit has been hit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -154,7 +154,7 @@ func getIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (
 		plugin.Logger(ctx).Error("ibm_is_vpc.getIsVpc", "connection_error", err)
 		return nil, err
 	}
-	id := d.KeyColumnQuals["id"].GetStringValue()
+	id := d.EqualsQuals["id"].GetStringValue()
 
 	// No inputs
 	if id == "" {

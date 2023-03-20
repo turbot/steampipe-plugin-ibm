@@ -71,7 +71,7 @@ func listAPIKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 		d.StreamListItem(ctx, i)
 
 		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
