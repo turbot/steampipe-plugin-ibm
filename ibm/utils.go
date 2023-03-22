@@ -17,8 +17,8 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/turbot/go-kit/types"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 func configApiKey(_ context.Context, d *plugin.QueryData) (string, error) {
