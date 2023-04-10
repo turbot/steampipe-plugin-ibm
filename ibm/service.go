@@ -26,7 +26,7 @@ import (
 
 // kmsService return the service for IBM KMS service
 func kmsService(ctx context.Context, d *plugin.QueryData) (*kp.Client, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
+	region := d.EqualsQualString("region")
 
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_kms"
@@ -373,7 +373,7 @@ func resourceManagerService(ctx context.Context, d *plugin.QueryData) (*resource
 
 func cosService(ctx context.Context, d *plugin.QueryData, region string) (*s3.S3, error) {
 
-	serviceInstanceID := plugin.GetMatrixItem(ctx)["instance_crn"].(string)
+	serviceInstanceID := d.EqualsQualString("instance_crn")
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_cos" + region
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {

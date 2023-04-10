@@ -41,7 +41,7 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 			{Name: "type", Type: proto.ColumnType_STRING, Description: "Specifies the MIME type that represents the key resource."},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "The key state based on NIST SP 800-57. States are integers and correspond to the Pre-activation = 0, Active = 1, Suspended = 2, Deactivated = 3, and Destroyed = 5 values."},
 			{Name: "imported", Type: proto.ColumnType_BOOL, Description: "Indicates whether the key was originally imported or generated in Key Protect."},
-			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Transform: transform.From(getServiceInstanceID)},
+			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Hydrate: plugin.HydrateFunc(getServiceInstanceID)},
 			{Name: "algorithm_type", Type: proto.ColumnType_STRING, Description: "Specifies the key algorithm."},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The timestamp when the key material was created."},
 			{Name: "created_by", Type: proto.ColumnType_STRING, Description: "The unique identifier for the resource that created the key."},
@@ -64,7 +64,7 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 
 			// Standard columns
 			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this key."},
-			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.From(getRegion), Description: "The region of this key."},
+			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this key."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("CRN").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Description: resourceInterfaceDescription("tags")},
@@ -77,8 +77,8 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listKmsKeys")
 
-	instanceID := plugin.GetMatrixItem(ctx)["instance_id"].(string)
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	instanceID := d.EqualsQualString("instance_id")
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "kms" {
@@ -136,8 +136,8 @@ func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 //// HYDRATE FUNCTIONS
 
 func getKmsKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	instanceID := plugin.GetMatrixItem(ctx)["instance_id"].(string)
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	instanceID := d.EqualsQualString("instance_id")
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "kms" {
@@ -168,7 +168,7 @@ func getKmsKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 }
 
 func getKmsKeyRotationPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	instanceID := plugin.GetMatrixItem(ctx)["instance_id"].(string)
+	instanceID := d.EqualsQualString("instance_id")
 
 	id := h.Item.(kp.Key).ID
 

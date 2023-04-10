@@ -32,7 +32,7 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 			{Name: "description", Type: proto.ColumnType_STRING, Description: "The description of the certificate."},
 			{Name: "status", Type: proto.ColumnType_STRING, Description: "The status of a certificate."},
 			{Name: "serial_number", Type: proto.ColumnType_STRING, Description: "The serial number of a certificate."},
-			{Name: "certificate_manager_instance_id", Type: proto.ColumnType_STRING, Description: "The CRN of the certificate manager service instance.", Transform: transform.From(getServiceInstanceCRN)},
+			{Name: "certificate_manager_instance_id", Type: proto.ColumnType_STRING, Description: "The CRN of the certificate manager service instance.", Hydrate: plugin.HydrateFunc(getServiceInstanceCRN)},
 			{Name: "algorithm", Type: proto.ColumnType_STRING, Description: "The Algorithm of a certificate."},
 			{Name: "auto_renew_enabled", Type: proto.ColumnType_BOOL, Description: "The automatic renewal status of the certificate.", Transform: transform.FromField("OrderPolicy.AutoRenewEnabled"), Default: false},
 			{Name: "begins_on", Type: proto.ColumnType_TIMESTAMP, Description: "The creation date of the certificate.", Transform: transform.FromField("BeginsOn").Transform(transform.UnixMsToTimestamp)},
@@ -47,7 +47,7 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 			{Name: "order_policy_name", Type: proto.ColumnType_STRING, Description: "The order policy name of the certificate.", Transform: transform.FromField("OrderPolicy.Name")},
 			// Standard columns
 			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("ID").Transform(crnToAccountID), Description: "The account ID of this certificate."},
-			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.From(getRegion), Description: "The region of this certificate."},
+			{Name: "region", Type: proto.ColumnType_STRING, Description: "The region of this certificate.", Hydrate: plugin.HydrateFunc(getRegion)},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("ID").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 		},
@@ -59,8 +59,8 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 func listCertificate(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listCertificate")
 
-	instanceCRN := plugin.GetMatrixItem(ctx)["instance_crn"].(string)
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	instanceCRN := d.EqualsQualString("instance_crn")
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "cloudcerts" {
