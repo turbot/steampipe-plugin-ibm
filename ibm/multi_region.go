@@ -7,8 +7,7 @@ import (
 	"strings"
 
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 // Regions is the current known list of valid regions
@@ -25,14 +24,6 @@ func Regions() []string {
 		"us-south",
 	}
 }
-
-// var pluginQueryData *plugin.QueryData
-
-// func init() {
-// 	pluginQueryData = &plugin.QueryData{
-// 		ConnectionManager: connection.NewManager(),
-// 	}
-// }
 
 // BuildRegionList :: return a list of matrix items, one per region specified in the connection config
 func BuildRegionList(_ context.Context, d *plugin.QueryData) []map[string]interface{} {
@@ -102,21 +93,21 @@ func getInvalidRegions(regions []string) []string {
 }
 
 // Transform used to get the region column
-func getRegion(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
+func getRegion(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	region := d.EqualsQualString("region")
 	return region, nil
 }
 
 // Transform used to get the instance_id column
-func getServiceInstanceID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	instanceID := plugin.GetMatrixItem(ctx)["instance_id"].(string)
+func getServiceInstanceID(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	instanceID := d.EqualsQualString("instance_id")
 	return instanceID, nil
 }
 
 // Transform used to get the instance_crn column
-func getServiceInstanceCRN(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	instanceID := plugin.GetMatrixItem(ctx)["instance_crn"].(string)
-	return instanceID, nil
+func getServiceInstanceCRN(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	instanceCRN := d.EqualsQualString("instance_crn")
+	return instanceCRN, nil
 }
 
 // GetDefaultIBMRegion returns the default region for IBM account

@@ -21,12 +21,12 @@ import (
 	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 // kmsService return the service for IBM KMS service
 func kmsService(ctx context.Context, d *plugin.QueryData) (*kp.Client, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
+	region := d.EqualsQualString("region")
 
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_kms"
@@ -373,7 +373,7 @@ func resourceManagerService(ctx context.Context, d *plugin.QueryData) (*resource
 
 func cosService(ctx context.Context, d *plugin.QueryData, region string) (*s3.S3, error) {
 
-	serviceInstanceID := plugin.GetMatrixItem(ctx)["instance_crn"].(string)
+	serviceInstanceID := d.EqualsQualString("instance_crn")
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_cos" + region
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {

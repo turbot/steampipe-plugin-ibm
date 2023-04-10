@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	kp "github.com/IBM/keyprotect-go-client"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -41,7 +41,7 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 			{Name: "type", Type: proto.ColumnType_STRING, Description: "Specifies the MIME type that represents the key resource."},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "The key state based on NIST SP 800-57. States are integers and correspond to the Pre-activation = 0, Active = 1, Suspended = 2, Deactivated = 3, and Destroyed = 5 values."},
 			{Name: "imported", Type: proto.ColumnType_BOOL, Description: "Indicates whether the key was originally imported or generated in Key Protect."},
-			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Transform: transform.From(getServiceInstanceID)},
+			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Hydrate: plugin.HydrateFunc(getServiceInstanceID)},
 			{Name: "algorithm_type", Type: proto.ColumnType_STRING, Description: "Specifies the key algorithm."},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The timestamp when the key material was created."},
 			{Name: "created_by", Type: proto.ColumnType_STRING, Description: "The unique identifier for the resource that created the key."},
@@ -64,7 +64,7 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 
 			// Standard columns
 			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this key."},
-			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.From(getRegion), Description: "The region of this key."},
+			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this key."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("CRN").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Description: resourceInterfaceDescription("tags")},
@@ -77,8 +77,8 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("listKmsKeys")
 
-	instanceID := plugin.GetMatrixItem(ctx)["instance_id"].(string)
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	instanceID := d.EqualsQualString("instance_id")
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "kms" {
@@ -86,7 +86,7 @@ func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	}
 
 	// Return if specified instanceID not matched
-	if d.KeyColumnQuals["instance_id"] != nil && d.KeyColumnQuals["instance_id"].GetStringValue() != instanceID {
+	if d.EqualsQuals["instance_id"] != nil && d.EqualsQuals["instance_id"].GetStringValue() != instanceID {
 		return nil, nil
 	}
 
@@ -99,8 +99,8 @@ func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	conn.Config.InstanceID = instanceID
 
 	// Additional filters
-	if d.KeyColumnQuals["key_ring_id"] != nil {
-		conn.Config.KeyRing = d.KeyColumnQuals["key_ring_id"].GetStringValue()
+	if d.EqualsQuals["key_ring_id"] != nil {
+		conn.Config.KeyRing = d.EqualsQuals["key_ring_id"].GetStringValue()
 	}
 
 	// Retrieve the list of keys for your account.
@@ -126,7 +126,7 @@ func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 		d.StreamListItem(ctx, i)
 
 		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -136,14 +136,14 @@ func listKmsKeys(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 //// HYDRATE FUNCTIONS
 
 func getKmsKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	instanceID := plugin.GetMatrixItem(ctx)["instance_id"].(string)
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	instanceID := d.EqualsQualString("instance_id")
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "kms" {
 		return nil, nil
 	}
-	id := d.KeyColumnQuals["id"].GetStringValue()
+	id := d.EqualsQuals["id"].GetStringValue()
 
 	// No inputs
 	if id == "" {
@@ -168,7 +168,7 @@ func getKmsKey(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 }
 
 func getKmsKeyRotationPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	instanceID := plugin.GetMatrixItem(ctx)["instance_id"].(string)
+	instanceID := d.EqualsQualString("instance_id")
 
 	id := h.Item.(kp.Key).ID
 

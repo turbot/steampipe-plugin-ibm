@@ -6,9 +6,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -39,7 +39,7 @@ func tableIbmIsInstanceDisk(ctx context.Context) *plugin.Table {
 			{Name: "size", Type: proto.ColumnType_INT, Description: "The size of the disk in GB (gigabytes)."},
 			// Standard columns
 			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getAccountId).WithCache(), Transform: transform.FromValue(), Description: "The account ID of this instance disk."},
-			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.From(getRegion), Description: "The region of this instance disk."},
+			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this instance disk."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 		},
 	}
@@ -53,7 +53,7 @@ type instanceDiskInfo = struct {
 //// LIST FUNCTION
 
 func listIsInstanceDisk(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
+	region := d.EqualsQualString("region")
 
 	// Get instance details
 	instanceData := h.Item.(vpcv1.Instance)
@@ -88,7 +88,7 @@ func listIsInstanceDisk(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 		d.StreamListItem(ctx, instanceDiskInfo{i, *instanceData.ID})
 
 		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -99,7 +99,7 @@ func listIsInstanceDisk(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 //// HYDRATE FUNCTIONS
 
 func getIsInstanceDisk(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
+	region := d.EqualsQualString("region")
 
 	// Create service connection
 	conn, err := vpcService(ctx, d, region)
@@ -107,8 +107,8 @@ func getIsInstanceDisk(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		plugin.Logger(ctx).Error("ibm_is_instance_disk.getIsInstanceDisk", "connection_error", err)
 		return nil, err
 	}
-	id := d.KeyColumnQuals["id"].GetStringValue()
-	instanceId := d.KeyColumnQuals["instance_id"].GetStringValue()
+	id := d.EqualsQuals["id"].GetStringValue()
+	instanceId := d.EqualsQuals["instance_id"].GetStringValue()
 
 	// No inputs
 	if id == "" && instanceId == "" {

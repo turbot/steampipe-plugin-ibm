@@ -7,9 +7,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -51,7 +51,7 @@ func tableIbmIsVpc(ctx context.Context) *plugin.Table {
 			{Name: "status", Type: proto.ColumnType_STRING, Description: "The status of this VPC."},
 			// Standard columns
 			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this VPC."},
-			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.From(getRegion), Description: "The region of this VPC."},
+			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this VPC."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("CRN").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Hydrate: getTags, Transform: transform.FromValue(), Description: resourceInterfaceDescription("tags")},
@@ -74,7 +74,7 @@ func GetNext(next interface{}) string {
 //// LIST FUNCTION
 
 func listIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
+	region := d.EqualsQualString("region")
 
 	// Create service connection
 	conn, err := vpcService(ctx, d, region)
@@ -100,8 +100,8 @@ func listIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) 
 	}
 
 	// Equals Qual Map handling
-	if d.KeyColumnQuals["classic_access"] != nil {
-		opts.SetClassicAccess(d.KeyColumnQuals["classic_access"].GetBoolValue())
+	if d.EqualsQuals["classic_access"] != nil {
+		opts.SetClassicAccess(d.EqualsQuals["classic_access"].GetBoolValue())
 	}
 
 	// Non-Equals Qual Map handling
@@ -130,7 +130,7 @@ func listIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) 
 			d.StreamListItem(ctx, i)
 
 			// Context can be cancelled due to manual cancellation or the limit has been hit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -146,7 +146,7 @@ func listIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) 
 //// HYDRATE FUNCTIONS
 
 func getIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
+	region := d.EqualsQualString("region")
 
 	// Create service connection
 	conn, err := vpcService(ctx, d, region)
@@ -154,7 +154,7 @@ func getIsVpc(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (
 		plugin.Logger(ctx).Error("ibm_is_vpc.getIsVpc", "connection_error", err)
 		return nil, err
 	}
-	id := d.KeyColumnQuals["id"].GetStringValue()
+	id := d.EqualsQuals["id"].GetStringValue()
 
 	// No inputs
 	if id == "" {
@@ -214,7 +214,7 @@ func getTags(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (i
 }
 
 func getVpcAddressPrefixes(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
+	region := d.EqualsQualString("region")
 	vpc := h.Item.(vpcv1.VPC)
 
 	// Create service connection

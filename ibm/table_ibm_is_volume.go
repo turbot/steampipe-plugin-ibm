@@ -5,9 +5,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -51,7 +51,7 @@ func tableIbmIsVolume(ctx context.Context) *plugin.Table {
 
 			// Standard columns
 			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this volume."},
-			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.From(getRegion), Description: "The region of this volume."},
+			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this volume."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("CRN").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Hydrate: getVolumeTags, Transform: transform.FromValue(), Description: resourceInterfaceDescription("tags")},
@@ -62,7 +62,7 @@ func tableIbmIsVolume(ctx context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listIsVolumes(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
+	region := d.EqualsQualString("region")
 
 	// Create service connection
 	conn, err := vpcService(ctx, d, region)
@@ -88,8 +88,8 @@ func listIsVolumes(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	}
 
 	// Additional filters
-	if d.KeyColumnQuals["name"] != nil {
-		opts.SetName(d.KeyColumnQuals["name"].GetStringValue())
+	if d.EqualsQuals["name"] != nil {
+		opts.SetName(d.EqualsQuals["name"].GetStringValue())
 	}
 
 	for {
@@ -105,7 +105,7 @@ func listIsVolumes(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 			d.StreamListItem(ctx, i)
 
 			// Context can be cancelled due to manual cancellation or the limit has been hit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -121,7 +121,7 @@ func listIsVolumes(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 //// HYDRATE FUNCTIONS
 
 func getIsVolume(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	region := plugin.GetMatrixItem(ctx)["region"].(string)
+	region := d.EqualsQualString("region")
 
 	// Create service connection
 	conn, err := vpcService(ctx, d, region)
@@ -130,7 +130,7 @@ func getIsVolume(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 		return nil, err
 	}
 
-	id := d.KeyColumnQuals["id"].GetStringValue()
+	id := d.EqualsQuals["id"].GetStringValue()
 
 	// No inputs
 	if id == "" {

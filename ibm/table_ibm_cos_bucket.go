@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -46,7 +46,7 @@ func listBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	region := GetDefaultIBMRegion(d)
 	plugin.Logger(ctx).Trace("listBucket")
 
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "cloud-object-storage" {
@@ -71,7 +71,7 @@ func listBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 		d.StreamListItem(ctx, i)
 
 		// Context can be cancelled due to manual cancellation or the limit has been hit
-		if d.QueryStatus.RowsRemaining(ctx) == 0 {
+		if d.RowsRemaining(ctx) == 0 {
 			return nil, nil
 		}
 	}
@@ -82,7 +82,7 @@ func listBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 
 func headBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("headBucket")
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "cloud-object-storage" {
@@ -114,7 +114,7 @@ func headBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 
 func getBucketLifecycle(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getBucketLifecycle")
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "cloud-object-storage" {
@@ -146,7 +146,7 @@ func getBucketLifecycle(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 
 func getBucketRetention(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getBucketRetention")
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "cloud-object-storage" {
@@ -179,7 +179,7 @@ func getBucketRetention(ctx context.Context, d *plugin.QueryData, h *plugin.Hydr
 func getBucketVersioning(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getBucketVersioning")
 
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "cloud-object-storage" {
@@ -214,7 +214,7 @@ func getBucketVersioning(ctx context.Context, d *plugin.QueryData, h *plugin.Hyd
 func getBucketWebsite(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getBucketWebsite")
 
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "cloud-object-storage" {
@@ -248,7 +248,7 @@ func getBucketWebsite(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 
 func getBucketACL(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getBucketACL")
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "cloud-object-storage" {
@@ -278,7 +278,7 @@ func getBucketACL(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 
 func getBucketPublicAccessBlockConfiguration(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("getBucketPublicAccessBlockConfiguration")
-	serviceType := plugin.GetMatrixItem(ctx)["service_type"].(string)
+	serviceType := d.EqualsQualString("service_type")
 
 	// Invalid service type
 	if serviceType != "cloud-object-storage" {
