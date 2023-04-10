@@ -8,7 +8,7 @@ A key ring organizes keys in a specific IBM Cloud location and allows you to man
 
 ```sql
 select
-  name,
+  title,
   instance_id,
   creation_date
 from
