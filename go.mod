@@ -14,7 +14,7 @@ require (
 	github.com/go-openapi/strfmt v0.20.3
 	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/turbot/go-kit v0.5.0
-	github.com/turbot/steampipe-plugin-sdk/v5 v5.3.0
+	github.com/turbot/steampipe-plugin-sdk/v5 v5.4.1
 )
 
 require (
