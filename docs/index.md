@@ -109,7 +109,7 @@ Each connection is implemented as a distinct [Postgres schema](https://www.postg
 select * from ibm_qa.ibm_iam_user
 ```
 
-You can multi-account connections by using an [**aggregator** connection](https://steampipe.io/docs/using-steampipe/managing-connections#using-aggregators). Aggregators allow you to query data from multiple connections for a plugin as if they are a single connection.
+You can create multi-account connections by using an [**aggregator** connection](https://steampipe.io/docs/using-steampipe/managing-connections#using-aggregators). Aggregators allow you to query data from multiple connections for a plugin as if they are a single connection.
 
 ```hcl
 connection "ibm_all" {
@@ -125,7 +125,7 @@ Querying tables from this connection will return results from the `ibm_dev`, `ib
 select * from ibm_all.ibm_iam_user
 ```
 
-Alternatively, can use an unqualified name and it will be resolved according to the [Search Path](https://steampipe.io/docs/guides/search-path). It's a good idea to name your aggregator first alphbetically, so that it is the first connection in the search path (i.e. `ibm_all` comes before `ibm_dev`):
+Alternatively, you can use an unqualified name and it will be resolved according to the [Search Path](https://steampipe.io/docs/guides/search-path). It's a good idea to name your aggregator first alphabetically so that it is the first connection in the search path (i.e. `ibm_all` comes before `ibm_dev`):
 
 ```sql
 select * from ibm_iam_user
