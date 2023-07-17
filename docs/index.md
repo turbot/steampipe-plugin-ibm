@@ -79,7 +79,7 @@ connection "ibm" {
 }
 ```
 
-### Multi-Account Connections
+## Multi-Account Connections
 
 You may create multiple IBM connections:
 
