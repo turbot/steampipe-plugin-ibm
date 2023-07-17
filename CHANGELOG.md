@@ -2,7 +2,7 @@
 
 _Enhancements_
 
-- Updated the `docs/index.md` file to include multi-project configuration examples. ([#78](https://github.com/turbot/steampipe-plugin-ibm/pull/78))
+- Updated the `docs/index.md` file to include multi-account configuration examples. ([#78](https://github.com/turbot/steampipe-plugin-ibm/pull/78))
 
 ## v0.6.0 [2023-06-20]
 
