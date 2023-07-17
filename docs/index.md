@@ -79,6 +79,68 @@ connection "ibm" {
 }
 ```
 
+## Multi-Account Connections
+
+You may create multiple IBM connections:
+
+```hcl
+connection "ibm_dev" {
+  plugin    = "ibm"
+  regions   = ["us-south", "eu-de"]
+  api_key   = "0hrqaLNt-Nc831AW5k7z10CcwOGk_ttqTpPOYYJ2rnwi"
+}
+
+connection "ibm_qa" {
+  plugin    = "ibm"
+  regions   = ["us-south", "eu-de"]
+  api_key   = "0hrqaLNt-Nc831AW5k7z10CcwOGk_ttqTpBBTYJ2rnwi"
+}
+
+connection "ibm_prod" {
+  plugin    = "ibm"
+  regions   = ["us-south", "eu-de"]
+  api_key   = "0hrqaLNt-Nc831AW5k7z10CcwOGk_ttqTpWRDYJ2rnwi"
+}
+```
+
+Each connection is implemented as a distinct [Postgres schema](https://www.postgresql.org/docs/current/ddl-schemas.html). As such, you can use qualified table names to query a specific connection:
+
+```sql
+select * from ibm_qa.ibm_iam_user
+```
+
+You can create multi-account connections by using an [**aggregator** connection](https://steampipe.io/docs/using-steampipe/managing-connections#using-aggregators). Aggregators allow you to query data from multiple connections for a plugin as if they are a single connection.
+
+```hcl
+connection "ibm_all" {
+  plugin      = "ibm"
+  type        = "aggregator"
+  connections = ["ibm_dev", "ibm_qa", "ibm_prod"]
+}
+```
+
+Querying tables from this connection will return results from the `ibm_dev`, `ibm_qa`, and `ibm_prod` connections:
+
+```sql
+select * from ibm_all.ibm_iam_user
+```
+
+Alternatively, you can use an unqualified name and it will be resolved according to the [Search Path](https://steampipe.io/docs/guides/search-path). It's a good idea to name your aggregator first alphabetically so that it is the first connection in the search path (i.e. `ibm_all` comes before `ibm_dev`):
+
+```sql
+select * from ibm_iam_user
+```
+
+Steampipe supports the `*` wildcard in the connection names. For example, to aggregate all the IBM plugin connections whose names begin with `ibm_`:
+
+```hcl
+connection "ibm_all" {
+  type        = "aggregator"
+  plugin      = "ibm"
+  connections = ["ibm_*"]
+}
+```
+
 ## Get involved
 
 - Open source: https://github.com/turbot/steampipe-plugin-ibm
