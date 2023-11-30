@@ -1,11 +1,20 @@
-# Table: ibm_is_volume
+---
+title: "Steampipe Table: ibm_is_volume - Query IBM Cloud Infrastructure Volumes using SQL"
+description: "Allows users to query IBM Cloud Infrastructure Volumes, providing insights into volume details including size, profile, and status."
+---
 
-Block Storage for VPC provides hypervisor-mounted, high-performance data storage for your virtual server instances that you can provision within an IBM Cloud Virtual Private Cloud (VPC). The VPC infrastructure provides rapid scaling across zones and extra performance and security.
-Block Storage for VPC offers block-level volumes that are attached to an instance as a boot volume when the instance is created or attached as secondary data volumes.
+# Table: ibm_is_volume - Query IBM Cloud Infrastructure Volumes using SQL
+
+IBM Cloud Infrastructure Volumes is a block storage service that provides scalable and reliable storage for your virtual server instances. It offers a variety of volume types that are optimized for different types of workloads, including transactional and big data workloads. IBM Cloud Infrastructure Volumes ensures data availability and durability by automatically replicating data across multiple physical drives.
+
+## Table Usage Guide
+
+The `ibm_is_volume` table provides insights into volumes within IBM Cloud Infrastructure. As a system administrator, explore volume-specific details through this table, including size, profile, and status. Utilize it to uncover information about volumes, such as those with specific profiles, the capacity of the volumes, and the status of the volumes.
 
 ## Examples
 
 ### Basic info
+Explore the status and creation date of various resources in your IBM Cloud infrastructure. This allows you to monitor the health and lifecycle of your resources effectively.
 
 ```sql
 select
@@ -19,6 +28,7 @@ from
 ```
 
 ### List volumes by name
+Determine the status and creation date of a specific volume in an IBM cloud infrastructure. This can be useful for tracking the lifecycle of your resources and managing their use effectively.
 
 ```sql
 select
@@ -34,6 +44,7 @@ where
 ```
 
 ### List of volumes with size more than 100GB
+Analyze the settings to understand which storage volumes exceed a capacity of 100GB. This can be useful for managing storage resources and identifying potential areas for data optimization.
 
 ```sql
 select
@@ -48,6 +59,7 @@ where
 ```
 
 ### List volumes not encrypted using user-managed key
+Explore which storage volumes are not using user-managed encryption. This can help assess the security measures in place and identify potential areas for improvement.
 
 ```sql
 select
@@ -63,6 +75,7 @@ where
 ```
 
 ### Volume count in each availability zone
+Explore which availability zones have the most volumes to better manage and distribute your resources. This could be particularly useful in balancing workloads and optimizing performance across different zones.
 
 ```sql
 select
