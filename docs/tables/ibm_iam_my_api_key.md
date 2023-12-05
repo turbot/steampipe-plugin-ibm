@@ -11,6 +11,9 @@ IBM Identity and Access Management (IAM) is a service within IBM Cloud that mana
 
 The `ibm_iam_my_api_key` table provides insights into API keys within IBM Identity and Access Management (IAM). As a security or DevOps engineer, explore API key-specific details through this table, including permissions, creation time, and associated metadata. Utilize it to uncover information about API keys, such as those with unrestricted permissions and the verification of access policies.
 
+**Important Notes**
+- To query all API keys in an account, use the `ibm_iam_api_key` table.
+
 ## Examples
 
 ### Basic info

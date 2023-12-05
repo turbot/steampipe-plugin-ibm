@@ -11,6 +11,9 @@ IBM IAM API Keys are a type of credentials in IBM Cloud that clients can use to 
 
 The `ibm_iam_api_key` table provides insights into API keys within IBM Cloud Identity and Access Management (IAM). As a security analyst, explore API key-specific details through this table, including account IDs, creation timestamps, descriptions, and associated metadata. Utilize it to uncover information about API keys, such as their status, the services they have access to, and the duration for which they are valid.
 
+**Important Notes**
+- To list all of your API keys use the `ibm_iam_my_api_key` table instead.
+
 ## Examples
 
 ### Basic info
