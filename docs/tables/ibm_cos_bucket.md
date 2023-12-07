@@ -16,7 +16,16 @@ The `ibm_cos_bucket` table provides insights into the configuration and access p
 ### Basic info
 Explore which IBM COS buckets are in use, their respective regions and when they were created. This can be beneficial for understanding the distribution and timeline of your storage resources.
 
-```sql
+```sql+postgres
+select
+  name,
+  region,
+  creation_date
+from
+  ibm_cos_bucket;
+```
+
+```sql+sqlite
 select
   name,
   region,
@@ -28,7 +37,19 @@ from
 ### List unencrypted buckets
 Determine the areas in which data stored in IBM Cloud Object Storage buckets are potentially at risk due to lack of encryption. This allows for a quick assessment of security vulnerabilities and aids in prioritizing necessary protective measures.
 
-```sql
+```sql+postgres
+select
+  name,
+  region,
+  creation_date,
+  sse_kp_enabled
+from
+  ibm_cos_bucket
+where
+  not sse_kp_enabled;
+```
+
+```sql+sqlite
 select
   name,
   region,
@@ -43,7 +64,19 @@ where
 ### List buckets with versioning disabled
 Explore which IBM COS buckets have versioning disabled to gain insights into potential data loss risks. This is useful in scenarios where maintaining different versions of objects in a bucket is crucial for data recovery and backup purposes.
 
-```sql
+```sql+postgres
+select
+  name,
+  region,
+  creation_date,
+  versioning_enabled
+from
+  ibm_cos_bucket
+where
+  not versioning_enabled;
+```
+
+```sql+sqlite
 select
   name,
   region,

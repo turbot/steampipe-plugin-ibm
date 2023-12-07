@@ -16,7 +16,19 @@ The `ibm_is_subnet` table provides insights into subnets within IBM Cloud VPC. A
 ### Basic info
 Explore the status and details of your network subnets, such as the range of IP addresses and associated virtual private cloud. This can be useful for managing and optimizing your network resources.
 
-```sql
+```sql+postgres
+select
+  id,
+  name,
+  status,
+  ipv4_cidr_block,
+  total_ipv4_address_count,
+  vpc
+from
+  ibm_is_subnet;
+```
+
+```sql+sqlite
 select
   id,
   name,
@@ -31,7 +43,20 @@ from
 ### List all subnets with fewer than 251 available IPv4 addresses
 Gain insights into subnets that are nearing their capacity by identifying those with fewer than 251 available IPv4 addresses. This can aid in planning and managing your network resources effectively.
 
-```sql
+```sql+postgres
+select
+  id,
+  name,
+  status,
+  ipv4_cidr_block,
+  available_ipv4_address_count
+from
+  ibm_is_subnet
+where
+  available_ipv4_address_count < 251;
+```
+
+```sql+sqlite
 select
   id,
   name,

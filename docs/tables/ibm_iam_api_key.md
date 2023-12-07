@@ -19,7 +19,18 @@ The `ibm_iam_api_key` table provides insights into API keys within IBM Cloud Ide
 ### Basic info
 Explore which API keys were created at what time and by which IAM user within IBM's IAM service. This can be particularly useful for auditing purposes or to track key creation in your environment.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  created_at,
+  iam_id as user_iam_id
+from
+  ibm_iam_api_key;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -33,7 +44,7 @@ from
 ### Access key count by user name
 Assess the distribution of access keys across different users to understand their individual API usage. This is useful for auditing purposes and to ensure appropriate access control.
 
-```sql
+```sql+postgres
 select
   u.user_id,
   count (key.id) as api_key_count
@@ -46,10 +57,23 @@ group by
   u.user_id;
 ```
 
+```sql+sqlite
+select
+  u.user_id,
+  count(key.id) as api_key_count
+from
+  ibm_iam_api_key as key,
+  ibm_iam_user as u
+where
+  u.iam_id = key.iam_id
+group by
+  u.user_id;
+```
+
 ### List keys older than 90 days
 Determine the API keys that have been in use for more than 90 days. This query can help identify potentially outdated keys for review, enhancing security and access management.
 
-```sql
+```sql+postgres
 select
   key.id as api_key_id,
   key.name as api_key_name,
@@ -62,4 +86,19 @@ from
 where
   key.iam_id = u.iam_id
   and extract(day from current_timestamp - key.created_at) > 90;
+```
+
+```sql+sqlite
+select
+  key.id as api_key_id,
+  key.name as api_key_name,
+  u.user_id,
+  julianday('now') - julianday(key.created_at) as age,
+  key.account_id
+from
+  ibm_iam_api_key as key,
+  ibm_iam_user as u
+where
+  key.iam_id = u.iam_id
+  and julianday('now') - julianday(key.created_at) > 90;
 ```

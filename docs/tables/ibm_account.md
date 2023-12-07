@@ -16,7 +16,17 @@ The `ibm_account` table provides insights into IBM Cloud Accounts. As a cloud ad
 ### Basic info
 Explore the basic details of your IBM account such as name, status, and owner ID. This can be useful in understanding the current state of your account, and identifying the appropriate owner.
 
-```sql
+```sql+postgres
+select
+  name,
+  guid as id,
+  state,
+  owner_user_id
+from
+  ibm_account;
+```
+
+```sql+sqlite
 select
   name,
   guid as id,
@@ -29,7 +39,20 @@ from
 ### Get details about account owner
 Explore which IBM accounts are linked with their respective owners, allowing you to identify instances where account ownership needs to be updated or verified. This provides useful insights into account management and ensures the correct assignment of resources.
 
-```sql
+```sql+postgres
+select
+  acc.name,
+  acc.guid as id,
+  acc.state,
+  u.first_name || ' ' || u.last_name as owner_full_name
+from
+  ibm_account as acc,
+  ibm_iam_user as u
+where
+  acc.owner_user_id = u.user_id;
+```
+
+```sql+sqlite
 select
   acc.name,
   acc.guid as id,

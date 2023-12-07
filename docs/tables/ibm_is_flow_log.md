@@ -16,7 +16,18 @@ The `ibm_is_flow_log` table provides insights into VPC Flow Logs within IBM Clou
 ### Basic info
 Gain insights into the basic information of your IBM flow logs, including their names, IDs, lifecycle states, and creation dates. This can be useful for assessing the status and history of your flow logs.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  lifecycle_state,
+  created_at
+from
+  ibm_is_flow_log;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -30,7 +41,20 @@ from
 ### List flow log collectors by name
 Explore the specific flow log collectors by name to assess their lifecycle state and creation time, which can help in managing and monitoring your IBM cloud resources. This can be particularly useful when you need to track the changes or status of a specific log collector named 'steampipe01'.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  lifecycle_state,
+  created_at
+from
+  ibm_is_flow_log
+where
+  name = 'steampipe01';
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -46,7 +70,7 @@ where
 ### List all inactive flow log collectors
 Discover the segments that contain inactive flow log collectors. This can be beneficial in optimizing resources by identifying unused or unnecessary elements within your system.
 
-```sql
+```sql+postgres
 select
   name,
   id,
@@ -59,10 +83,23 @@ where
   not active;
 ```
 
+```sql+sqlite
+select
+  name,
+  id,
+  crn,
+  lifecycle_state,
+  created_at
+from
+  ibm_is_flow_log
+where
+  active = 0;
+```
+
 ### List all flow log collectors with auto delete disabled
 Discover the segments that have auto-delete disabled in flow log collectors, which is essential for maintaining data security and ensuring no essential log data is lost unintentionally.
 
-```sql
+```sql+postgres
 select
   name,
   id,
@@ -75,15 +112,38 @@ where
   not auto_delete;
 ```
 
+```sql+sqlite
+select
+  name,
+  id,
+  crn,
+  lifecycle_state,
+  created_at
+from
+  ibm_is_flow_log
+where
+  auto_delete = 0;
+```
+
 ### List flow logs with their corresponding VPC details
 Explore which flow logs are associated with specific VPCs to better manage network traffic and security in your IBM cloud infrastructure. This can help identify potential issues or bottlenecks in your network configuration.
 
-```sql
+```sql+postgres
 select 
   id, 
   name, 
   vpc ->> 'id' as vpc_id, 
   vpc ->> 'name' as vpc_name 
+from 
+  ibm_is_flow_log;
+```
+
+```sql+sqlite
+select 
+  id, 
+  name, 
+  json_extract(vpc, '$.id') as vpc_id, 
+  json_extract(vpc, '$.name') as vpc_name 
 from 
   ibm_is_flow_log;
 ```

@@ -16,7 +16,17 @@ The `ibm_is_region` table offers insights into the regions within IBM Cloud infr
 ### Basic info
 Explore the status and endpoints of different regions within your IBM cloud infrastructure. This can help you understand the overall health and accessibility of your resources across different geographical locations.
 
-```sql
+```sql+postgres
+select
+  name,
+  endpoint,
+  status,
+  href
+from
+  ibm_is_region;
+```
+
+```sql+sqlite
 select
   name,
   endpoint,
@@ -29,7 +39,19 @@ from
 ### List all European regions
 Uncover the details of all IBM cloud regions located in Europe, including their status and endpoint information. This can be useful for managing resources or troubleshooting issues specific to these regions.
 
-```sql
+```sql+postgres
+select
+  name,
+  endpoint,
+  status,
+  href
+from
+  ibm_is_region
+where
+  name like 'eu-%'
+```
+
+```sql+sqlite
 select
   name,
   endpoint,

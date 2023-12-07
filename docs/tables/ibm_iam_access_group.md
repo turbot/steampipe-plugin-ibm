@@ -16,7 +16,19 @@ The `ibm_iam_access_group` table provides insights into IAM access groups within
 ### Basic info
 Explore the fundamental details of your IBM IAM access groups to better understand their creation timeline and federation status. This can aid in managing access control and understanding the group's history.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  is_federated,
+  href,
+  created_by_id,
+  created_at
+from
+  ibm_iam_access_group;
+```
+
+```sql+sqlite
 select
   name,
   id,

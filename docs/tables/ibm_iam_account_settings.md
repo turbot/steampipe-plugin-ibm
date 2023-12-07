@@ -16,7 +16,17 @@ The `ibm_iam_account_settings` table provides insights into the IBM IAM Account 
 ### Basic info
 Explore which IBM account settings have restrictions on creating service IDs and platform API keys. This can be useful in maintaining security by understanding where creation of these elements is limited and which IP addresses are permitted.
 
-```sql
+```sql+postgres
+select
+  account_id,
+  restrict_create_service_id,
+  restrict_create_platform_api_key,
+  allowed_ip_addresses
+from
+  ibm_iam_account_settings;
+```
+
+```sql+sqlite
 select
   account_id,
   restrict_create_service_id,

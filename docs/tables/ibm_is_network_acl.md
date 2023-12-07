@@ -16,7 +16,7 @@ The `ibm_is_network_acl` table provides insights into Network ACLs within IBM Cl
 ### Basic info
 Explore which network access control lists (ACLs) are associated with your IBM Cloud resources. This can help you manage access permissions, ensuring secure and efficient operations across your network.
 
-```sql
+```sql+postgres
 select
   name,
   crn,
@@ -27,10 +27,21 @@ from
   ibm_is_network_acl;
 ```
 
+```sql+sqlite
+select
+  name,
+  crn,
+  json_extract(vpc, '$.name') as vpc_name,
+  region,
+  account_id
+from
+  ibm_is_network_acl;
+```
+
 ### List the default NACL associated with the VPCs
 Determine the areas in which the default Network Access Control List (NACL) is associated with Virtual Private Clouds (VPCs). This query is beneficial to understand the security and networking configuration within your cloud environment.
 
-```sql
+```sql+postgres
 select
   acl.name,
   acl.crn,
@@ -44,10 +55,24 @@ where
   acl.id = vpc.default_network_acl ->> 'id';
 ```
 
+```sql+sqlite
+select
+  acl.name,
+  acl.crn,
+  vpc.name as vpc_name,
+  acl.region,
+  acl.account_id
+from
+  ibm_is_network_acl as acl,
+  ibm_is_vpc as vpc
+where
+  acl.id = json_extract(vpc.default_network_acl, '$.id');
+```
+
 ### Subnet associated with each network ACL
 Explore which subnets are associated with each network ACL. This can help in network management by providing insights into the configuration and relationship between subnets and network ACLs.
 
-```sql
+```sql+postgres
 select
   name,
   crn,
@@ -59,4 +84,18 @@ select
 from
   ibm_is_network_acl,
   jsonb_array_elements(subnets) as subnet;
+```
+
+```sql+sqlite
+select
+  name,
+  crn,
+  json_extract(vpc, '$.name') as vpc_name,
+  json_extract(subnet.value, '$.id') as subnet_id,
+  json_extract(subnet.value, '$.name') as subnet_name,
+  region,
+  account_id
+from
+  ibm_is_network_acl,
+  json_each(subnets) as subnet;
 ```

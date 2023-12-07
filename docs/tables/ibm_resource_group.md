@@ -16,7 +16,19 @@ The `ibm_resource_group` table provides insights into Resource Groups within IBM
 ### Basic info
 Explore the status and creation date of various resources within your IBM account. This can be useful for understanding the distribution and organization of resources, as well as identifying any potential issues or anomalies.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  state,
+  created_at,
+  account_id
+from
+  ibm_resource_group;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -31,7 +43,7 @@ from
 ### List default resource groups
 Explore which resource groups have been set as default in your IBM cloud setup. This can help streamline resource management and optimize cloud operations.
 
-```sql
+```sql+postgres
 select
   name,
   id,
@@ -44,10 +56,37 @@ where
   is_default;
 ```
 
+```sql+sqlite
+select
+  name,
+  id,
+  crn,
+  state,
+  created_at
+from
+  ibm_resource_group
+where
+  is_default = 1;
+```
+
 ### List resource groups by name
 This query helps you pinpoint specific resource groups in your IBM account by their name. This can be particularly useful in managing resources and understanding their allocation within your infrastructure.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  state,
+  created_at,
+  account_id
+from
+  ibm_resource_group
+where
+  name = 'Default';
+```
+
+```sql+sqlite
 select
   name,
   id,

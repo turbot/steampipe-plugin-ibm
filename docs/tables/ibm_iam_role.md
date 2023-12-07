@@ -16,7 +16,17 @@ The `ibm_iam_role` table provides insights into IAM roles within IBM Identity an
 ### Basic info
 Explore which IBM IAM roles are currently in use to understand their actions and assess their elements within your system. This can help pinpoint specific areas for security improvement or optimization.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  actions
+from
+  ibm_iam_role;
+```
+
+```sql+sqlite
 select
   name,
   id,

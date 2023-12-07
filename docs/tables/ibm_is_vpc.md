@@ -16,7 +16,18 @@ The `ibm_is_vpc` table provides insights into Virtual Private Clouds within IBM 
 ### Basic info
 Discover the segments that have classic access in your IBM cloud virtual private cloud (VPC) settings to understand potential security implications and to enhance the overall network configuration.
 
-```sql
+```sql+postgres
+select
+  id,
+  name,
+  crn,
+  classic_access,
+  cse_source_ips
+from
+  ibm_is_vpc;
+```
+
+```sql+sqlite
 select
   id,
   name,
@@ -30,7 +41,7 @@ from
 ### List all VPCs with classic access
 Discover the segments that have classic access within your virtual private cloud (VPC) settings. This allows you to identify potential security risks and manage access controls more effectively.
 
-```sql
+```sql+postgres
 select
   id,
   name,
@@ -43,10 +54,23 @@ where
   classic_access;
 ```
 
+```sql+sqlite
+select
+  id,
+  name,
+  crn,
+  classic_access,
+  cse_source_ips
+from
+  ibm_is_vpc
+where
+  classic_access = 1;
+```
+
 ### List address prefix details for VPCs
 Analyze the settings to understand the details of address prefixes for Virtual Private Clouds (VPCs). This is useful to manage network configurations and identify default settings.
 
-```sql
+```sql+postgres
 select
   name,
   addressp ->> 'cidr' as "cidr",
@@ -56,4 +80,16 @@ select
 from
   ibm_is_vpc,
   jsonb_array_elements(address_prefixes) addressp;
+```
+
+```sql+sqlite
+select
+  name,
+  json_extract(addressp.value, '$.cidr') as "cidr",
+  json_extract(addressp.value, '$.zone.name') as "zone",
+  json_extract(addressp.value, '$.created_at') as "created_at",
+  json_extract(addressp.value, '$.is_default') as "is_default"
+from
+  ibm_is_vpc,
+  json_each(address_prefixes) as addressp;
 ```

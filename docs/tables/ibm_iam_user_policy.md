@@ -16,7 +16,18 @@ The `ibm_iam_user_policy` table provides insights into user policies within IBM 
 ### Basic info
 Explore which user policies are in effect within your IBM IAM setup. This allows you to identify instances where permissions may be overly broad or insufficient, enhancing overall security and compliance.
 
-```sql
+```sql+postgres
+select
+  id,
+  type,
+  created_by_id,
+  href,
+  roles
+from
+  ibm_iam_user_policy;
+```
+
+```sql+sqlite
 select
   id,
   type,
@@ -30,7 +41,20 @@ from
 ### List all system created policies
 Explore which policies have been created automatically by the system. This is useful for understanding system-level permissions and roles.
 
-```sql
+```sql+postgres
+select
+  id,
+  type,
+  created_by_id,
+  href,
+  roles
+from
+  ibm_iam_user_policy
+where
+  created_by_id = 'system';
+```
+
+```sql+sqlite
 select
   id,
   type,

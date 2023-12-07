@@ -16,7 +16,17 @@ The `ibm_certificate_manager_certificate` table provides insights into the certi
 ### Basic info
 Analyze the status of various certificates to understand their validity and issuing authority. This could be useful in managing and maintaining the security and integrity of your system.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  status,
+  issuer
+from
+  ibm_certificate_manager_certificate;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -29,7 +39,7 @@ from
 ### List all imported certificates
 Discover the segments that have imported certificates to understand their status and issuer. This can help in maintaining the security and integrity of your system.
 
-```sql
+```sql+postgres
 select
   name,
   id,
@@ -40,4 +50,17 @@ from
   ibm_certificate_manager_certificate
 where
   imported;
+```
+
+```sql+sqlite
+select
+  name,
+  id,
+  status,
+  issuer,
+  imported
+from
+  ibm_certificate_manager_certificate
+where
+  imported = 1;
 ```

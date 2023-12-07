@@ -16,7 +16,19 @@ The `ibm_is_security_group` table provides insights into Security Groups within 
 ### Basic info
 Explore the basic details of security groups within your IBM cloud infrastructure. This can help you understand the security configurations and rules applied, and identify any potential vulnerabilities or misconfigurations.
 
-```sql
+```sql+postgres
+select
+  id,
+  name,
+  crn,
+  rules,
+  targets,
+  vpc
+from
+  ibm_is_security_group;
+```
+
+```sql+sqlite
 select
   id,
   name,

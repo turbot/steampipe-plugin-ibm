@@ -16,7 +16,18 @@ The `ibm_iam_user` table provides insights into users within IBM Cloud Identity 
 ### Basic info
 Explore the basic user information from an IBM IAM user list to gain insights into user details and their associated account IDs. This can be useful for user management and account audits.
 
-```sql
+```sql+postgres
+select
+  first_name,
+  last_name,
+  user_id,
+  email,
+  account_id
+from
+  ibm_iam_user;
+```
+
+```sql+sqlite
 select
   first_name,
   last_name,
@@ -30,7 +41,20 @@ from
 ### List inactive users
 This query helps identify users who are not currently active within the IBM IAM system. It is useful in auditing user activity and assessing the need for potential clean-up of inactive accounts.
 
-```sql
+```sql+postgres
+select
+  first_name,
+  last_name,
+  user_id,
+  email,
+  state
+from
+  ibm_iam_user
+where
+  state <> 'ACTIVE';
+```
+
+```sql+sqlite
 select
   first_name,
   last_name,
@@ -46,7 +70,19 @@ where
 ### List users with no primary contact phone number
 Discover the users who lack a primary contact phone number, allowing you to identify gaps in your contact information and reach out for updates. This can be particularly useful in maintaining effective communication channels with all users.
 
-```sql
+```sql+postgres
+select
+  first_name,
+  last_name,
+  user_id,
+  phonenumber
+from
+  ibm_iam_user
+where
+  phonenumber is null;
+```
+
+```sql+sqlite
 select
   first_name,
   last_name,

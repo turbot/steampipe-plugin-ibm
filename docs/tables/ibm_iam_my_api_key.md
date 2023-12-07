@@ -19,7 +19,18 @@ The `ibm_iam_my_api_key` table provides insights into API keys within IBM Identi
 ### Basic info
 Discover the segments that help you understand the creation and user details of your IBM IAM API keys. This can be useful to track key creation and usage patterns for security and auditing purposes.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  created_at,
+  iam_id as user_iam_id
+from
+  ibm_iam_my_api_key;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -33,7 +44,7 @@ from
 ### Access key count by user name
 Assess the elements within your IBM IAM system to understand the distribution of API keys among users. This can be useful for identifying users with an unusually high number of keys, which could suggest a potential security risk.
 
-```sql
+```sql+postgres
 select
   u.user_id,
   count (key.id) as api_key_count
@@ -46,10 +57,23 @@ group by
   u.user_id;
 ```
 
+```sql+sqlite
+select
+  u.user_id,
+  count(key.id) as api_key_count
+from
+  ibm_iam_my_api_key as key,
+  ibm_iam_user as u
+where
+  u.iam_id = key.iam_id
+group by
+  u.user_id;
+```
+
 ### List keys older than 90 days
 Discover the segments that have API keys older than 90 days to maintain security and ensure timely key rotation. This helps in managing outdated keys which may pose potential security risks.
 
-```sql
+```sql+postgres
 select
   key.id as api_key_id,
   key.name as api_key_name,
@@ -62,4 +86,19 @@ from
 where
   key.iam_id = u.iam_id
   and extract(day from current_timestamp - key.created_at) > 90;
+```
+
+```sql+sqlite
+select
+  key.id as api_key_id,
+  key.name as api_key_name,
+  u.user_id,
+  julianday('now') - julianday(key.created_at) as age,
+  key.account_id
+from
+  ibm_iam_my_api_key as key,
+  ibm_iam_user as u
+where
+  key.iam_id = u.iam_id
+  and julianday('now') - julianday(key.created_at) > 90;
 ```

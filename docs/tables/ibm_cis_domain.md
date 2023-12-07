@@ -16,7 +16,17 @@ The `ibm_cis_domain` table provides insights into domains within IBM Cloud Inter
 ### Basic info
 Explore which domains are active and their respective security levels by assessing their status and minimum TLS version. This is particularly useful for maintaining security standards and ensuring all domains are operating as expected.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  status,
+  minimum_tls_version
+from
+  ibm_cis_domain;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -29,7 +39,19 @@ from
 ### List pending domains
 Identify domains that are currently in a pending status to monitor and manage their progress effectively.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  status,
+  minimum_tls_version
+from
+  ibm_cis_domain
+where
+  status = 'pending';
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -44,7 +66,19 @@ where
 ### List domains where web_application_firewall not enabled
 Identify domains where the web application firewall is not enabled. This is useful for enhancing security by pinpointing potential vulnerabilities in your network infrastructure.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  status,
+  minimum_tls_version
+from
+  ibm_cis_domain
+where
+  web_application_firewall = 'off';
+```
+
+```sql+sqlite
 select
   name,
   id,

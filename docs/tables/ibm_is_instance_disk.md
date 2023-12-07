@@ -16,7 +16,17 @@ The `ibm_is_instance_disk` table allows users to gain insights into the disk usa
 ### Basic info
 Discover the segments that highlight the creation time and identifiers of specific instances within IBM's infrastructure service. This is useful for gaining insights into the lifecycle and management of your resources.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  instance_id,
+  created_at
+from
+  ibm_is_instance_disk;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -29,7 +39,19 @@ from
 ### List large disks (> 100 GB)
 Explore which IBM instance disks are larger than 100GB. This is useful for managing storage resources and identifying potential areas for data optimization.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  instance_id,
+  created_at
+from
+  ibm_is_instance_disk
+where
+  size > 100;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -44,7 +66,21 @@ where
 ### List unused disks
 Determine the areas in which unused disks are present by identifying the disks that are not associated with any running instances. This can help in optimizing resources and managing storage efficiently.
 
-```sql
+```sql+postgres
+select
+  d.name as disk_name,
+  d.id as disk_id,
+  i.name as instance_name,
+  d.created_at
+from
+  ibm_is_instance_disk as d,
+  ibm_is_instance as i
+where
+  d.instance_id = i.id
+  and i.status <> 'running';
+```
+
+```sql+sqlite
 select
   d.name as disk_name,
   d.id as disk_id,

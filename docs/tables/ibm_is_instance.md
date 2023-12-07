@@ -16,7 +16,18 @@ The `ibm_is_instance` table provides insights into instances within IBM Cloud In
 ### Basic info
 Discover the segments that are currently active, along with their unique identifiers and creation dates, to gain insights into your IBM cloud instances. This can help in managing and tracking the status of your instances.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  status,
+  created_at
+from
+  ibm_is_instance;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -30,7 +41,20 @@ from
 ### List instances by name
 This query is used to identify specific instances by their name, in this case 'steampipe01'. It's useful for quickly locating specific instances, allowing for efficient management and monitoring of their status and other details.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  status,
+  created_at
+from
+  ibm_is_instance
+where
+  name = 'steampipe01';
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -46,9 +70,19 @@ where
 ### Instance count in each availability zone
 Explore which availability zones are hosting the most instances. This can help in understanding the distribution of resources and identifying any potential zones that may be underutilized or overloaded.
 
-```sql
+```sql+postgres
 select
   zone ->> 'name' as zone_name,
+  count(*)
+from
+  ibm_is_instance
+group by
+  zone_name;
+```
+
+```sql+sqlite
+select
+  json_extract(zone, '$.name') as zone_name,
   count(*)
 from
   ibm_is_instance
@@ -59,7 +93,7 @@ group by
 ### Get instance disks attached with instance
 Analyze the settings to understand the association between instances and their attached disks, including the size of each disk. This is useful in managing storage resources, ensuring adequate disk space for each instance.
 
-```sql
+```sql+postgres
 select
   name as instance_name,
   d ->> 'name' as instance_disk_name,
@@ -69,10 +103,20 @@ from
   jsonb_array_elements(disks) as d;
 ```
 
+```sql+sqlite
+select
+  name as instance_name,
+  json_extract(d.value, '$.name') as instance_disk_name,
+  json_extract(d.value, '$.size') as disk_size
+from
+  ibm_is_instance,
+  json_each(disks) as d;
+```
+
 ### Get floating ips associated to the instances
 Explore which instances have floating IP addresses associated with them. This is useful for understanding the network configuration and resource allocation within your IBM cloud infrastructure.
 
-```sql
+```sql+postgres
 select 
   name,
   fip -> 'target' ->> 'id' as network_interface_id,
@@ -81,4 +125,15 @@ select
 from 
   ibm_is_instance,
   jsonb_array_elements(floating_ips) as fip;
+```
+
+```sql+sqlite
+select 
+  name,
+  json_extract(fip.value, '$.target.id') as network_interface_id,
+  json_extract(fip.value, '$.address') as floating_ip,
+  json_extract(fip.value, '$.created_at') as create_time 
+from 
+  ibm_is_instance,
+  json_each(floating_ips) as fip;
 ```

@@ -16,7 +16,19 @@ The `ibm_kms_key` table provides insights into keys within IBM Key Protect. As a
 ### Basic info
 Analyze the settings to understand the status and creation date of IBM Key Management Service keys, which can be useful in managing and auditing key usage across your IBM Cloud services.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  instance_id,
+  state,
+  creation_date
+from
+  ibm_kms_key;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -31,7 +43,7 @@ from
 ### List keys older than 30 days
 Explore which encryption keys have been in existence for over a month. This can be useful for managing and auditing key lifecycles, ensuring old and potentially vulnerable keys are replaced or retired.
 
-```sql
+```sql+postgres
 select
   name,
   id,
@@ -47,10 +59,41 @@ order by
   creation_date;
 ```
 
+```sql+sqlite
+select
+  name,
+  id,
+  crn,
+  instance_id,
+  state,
+  creation_date
+from
+  ibm_kms_key
+where
+  creation_date <= date('now','-30 day')
+order by
+  creation_date;
+```
+
 ### List keys by key ring
 Determine the areas in which specific keys are associated with a given key ring. This can help in managing and organizing your encryption keys, enhancing your security strategy.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  instance_id,
+  state,
+  creation_date,
+  key_ring_id
+from
+  ibm_kms_key
+where
+  key_ring_id = 'steampipe';
+```
+
+```sql+sqlite
 select
   name,
   id,

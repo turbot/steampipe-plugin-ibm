@@ -16,7 +16,18 @@ The `ibm_kms_key_ring` table provides insights into Key Rings within IBM Key Pro
 ### Basic info
 Explore the creation dates and titles of key rings within a specific instance in IBM's Key Management Service. This can be beneficial in understanding the organization and timeline of your security infrastructure.
 
-```sql
+```sql+postgres
+select
+  title,
+  instance_id,
+  creation_date
+from
+  ibm_kms_key_ring
+where
+  instance_id = '148be70a-ee65-4149-8222-1bf0ff45542f';
+```
+
+```sql+sqlite
 select
   title,
   instance_id,
