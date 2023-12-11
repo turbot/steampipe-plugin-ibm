@@ -142,11 +142,6 @@ connection "ibm_all" {
 }
 ```
 
-## Get involved
-
-- Open source: https://github.com/turbot/steampipe-plugin-ibm
-- Community: [Join #steampipe on Slack →](https://turbot.com/community/join)
-
 ## Multi-Region Connections
 
 You may also specify one or more regions with the `regions` argument:
