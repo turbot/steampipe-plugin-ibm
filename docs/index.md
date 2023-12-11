@@ -8,6 +8,7 @@ short_name: "ibm"
 description: "Steampipe plugin to query resources, users and more from IBM Cloud."
 og_description: "Query IBM Cloud with SQL! Open source CLI. No DB required."
 og_image: "/images/plugins/turbot/ibm-social-graphic.png"
+engines: ["steampipe", "sqlite", "postgres", "export"]
 ---
 
 # IBM Cloud + Steampipe
