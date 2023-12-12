@@ -8,13 +8,14 @@ short_name: "ibm"
 description: "Steampipe plugin to query resources, users and more from IBM Cloud."
 og_description: "Query IBM Cloud with SQL! Open source CLI. No DB required."
 og_image: "/images/plugins/turbot/ibm-social-graphic.png"
+engines: ["steampipe", "sqlite", "postgres", "export"]
 ---
 
 # IBM Cloud + Steampipe
 
 [IBM Cloud](https://www.ibm.com/cloud) is a set of cloud computing services for business including IaaS and PaaS.
 
-[Steampipe](https://steampipe.io) is an open source CLI to instantly query cloud APIs using SQL.
+[Steampipe](https://steampipe.io) is an open-source zero-ETL engine to instantly query cloud APIs using SQL.
 
 List VPCs in your IBM Cloud account:
 
@@ -140,11 +141,6 @@ connection "ibm_all" {
   connections = ["ibm_*"]
 }
 ```
-
-## Get involved
-
-- Open source: https://github.com/turbot/steampipe-plugin-ibm
-- Community: [Join #steampipe on Slack →](https://turbot.com/community/join)
 
 ## Multi-Region Connections
 

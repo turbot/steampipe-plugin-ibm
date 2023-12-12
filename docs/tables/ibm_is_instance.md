@@ -1,12 +1,33 @@
-# Table: ibm_is_instance
+---
+title: "Steampipe Table: ibm_is_instance - Query IBM Cloud Infrastructure Instances using SQL"
+description: "Allows users to query IBM Cloud Infrastructure Instances, specifically providing details about the instances such as status, VPC, zone, profile, and resources. It aids in gaining insights into the instance configurations and their current state."
+---
 
-A virtual server instances for VPC helps to provision instances with high network performance quickly. When you provision an instance, you select a profile that matches the amount of memory and compute power that you need for the application that you plan to run on the instance. Instances are available on the x86 architecture. After you provision an instance, you control and manage those infrastructure resources.
+# Table: ibm_is_instance - Query IBM Cloud Infrastructure Instances using SQL
+
+IBM Cloud Infrastructure Instances are virtual server instances deployed in IBM Cloud. They are a part of IBM's Infrastructure as a Service (IaaS) offering, providing scalable compute capacity for applications and workloads. These instances can be customized based on the compute power, memory, and storage requirements, and can be managed and accessed over the internet.
+
+## Table Usage Guide
+
+The `ibm_is_instance` table provides insights into instances within IBM Cloud Infrastructure. As a system administrator or a DevOps engineer, explore instance-specific details through this table, including status, VPC, zone, profile, and resources. Utilize it to uncover information about instances, such as their current state, associated resources, and the zones in which they are deployed.
 
 ## Examples
 
 ### Basic info
+Discover the segments that are currently active, along with their unique identifiers and creation dates, to gain insights into your IBM cloud instances. This can help in managing and tracking the status of your instances.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  status,
+  created_at
+from
+  ibm_is_instance;
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -18,8 +39,22 @@ from
 ```
 
 ### List instances by name
+This query is used to identify specific instances by their name, in this case 'steampipe01'. It's useful for quickly locating specific instances, allowing for efficient management and monitoring of their status and other details.
 
-```sql
+```sql+postgres
+select
+  name,
+  id,
+  crn,
+  status,
+  created_at
+from
+  ibm_is_instance
+where
+  name = 'steampipe01';
+```
+
+```sql+sqlite
 select
   name,
   id,
@@ -33,8 +68,9 @@ where
 ```
 
 ### Instance count in each availability zone
+Explore which availability zones are hosting the most instances. This can help in understanding the distribution of resources and identifying any potential zones that may be underutilized or overloaded.
 
-```sql
+```sql+postgres
 select
   zone ->> 'name' as zone_name,
   count(*)
@@ -44,9 +80,20 @@ group by
   zone_name;
 ```
 
-### Get instance disks attached with instance
+```sql+sqlite
+select
+  json_extract(zone, '$.name') as zone_name,
+  count(*)
+from
+  ibm_is_instance
+group by
+  zone_name;
+```
 
-```sql
+### Get instance disks attached with instance
+Analyze the settings to understand the association between instances and their attached disks, including the size of each disk. This is useful in managing storage resources, ensuring adequate disk space for each instance.
+
+```sql+postgres
 select
   name as instance_name,
   d ->> 'name' as instance_disk_name,
@@ -56,9 +103,20 @@ from
   jsonb_array_elements(disks) as d;
 ```
 
-### Get floating ips associated to the instances
+```sql+sqlite
+select
+  name as instance_name,
+  json_extract(d.value, '$.name') as instance_disk_name,
+  json_extract(d.value, '$.size') as disk_size
+from
+  ibm_is_instance,
+  json_each(disks) as d;
+```
 
-```sql
+### Get floating ips associated to the instances
+Explore which instances have floating IP addresses associated with them. This is useful for understanding the network configuration and resource allocation within your IBM cloud infrastructure.
+
+```sql+postgres
 select 
   name,
   fip -> 'target' ->> 'id' as network_interface_id,
@@ -67,4 +125,15 @@ select
 from 
   ibm_is_instance,
   jsonb_array_elements(floating_ips) as fip;
+```
+
+```sql+sqlite
+select 
+  name,
+  json_extract(fip.value, '$.target.id') as network_interface_id,
+  json_extract(fip.value, '$.address') as floating_ip,
+  json_extract(fip.value, '$.created_at') as create_time 
+from 
+  ibm_is_instance,
+  json_each(floating_ips) as fip;
 ```
