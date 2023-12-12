@@ -5,8 +5,8 @@ import (
 )
 
 type ibmConfig struct {
-	APIKey  *string  `cty:"api_key"`
-	Regions []string `cty:"regions,optional"`
+	APIKey  *string  `hcl:"api_key"`
+	Regions []string `hcl:"regions,optional"`
 }
 
 func ConfigInstance() interface{} {
