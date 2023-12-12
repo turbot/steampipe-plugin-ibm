@@ -2,22 +2,11 @@ package ibm
 
 import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/schema"
 )
 
 type ibmConfig struct {
 	APIKey  *string  `cty:"api_key"`
-	Regions []string `cty:"regions"`
-}
-
-var ConfigSchema = map[string]*schema.Attribute{
-	"api_key": {
-		Type: schema.TypeString,
-	},
-	"regions": {
-		Type: schema.TypeList,
-		Elem: &schema.Attribute{Type: schema.TypeString},
-	},
+	Regions []string `cty:"regions,optional"`
 }
 
 func ConfigInstance() interface{} {
