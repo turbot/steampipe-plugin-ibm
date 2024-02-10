@@ -13,7 +13,7 @@ require (
 	github.com/IBM/vpc-go-sdk v1.0.1
 	github.com/go-openapi/strfmt v0.20.3
 	github.com/golang-jwt/jwt/v4 v4.1.0
-	github.com/turbot/go-kit v0.9.0-rc.1
+	github.com/turbot/go-kit v0.9.0-rc.3
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.8.0
 )
 
@@ -42,7 +42,7 @@ require (
 	github.com/eko/gocache/store/bigcache/v4 v4.2.1 // indirect
 	github.com/eko/gocache/store/ristretto/v4 v4.2.1 // indirect
 	github.com/fatih/color v1.15.0 // indirect
-	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gertd/go-pluralize v0.2.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
