@@ -2,8 +2,10 @@ package ibm
 
 import (
 	"context"
+	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
+	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
+	"github.com/IBM-Cloud/bluemix-go/models"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -35,6 +37,39 @@ func tableIbmAccount(ctx context.Context) *plugin.Table {
 	}
 }
 
+type AccountInfo struct {
+	BillingCountryCode   string
+	BluemixSubscriptions []models.BluemixSubscription
+	ConfigurationID      *string
+	CountryCode          string
+	CurrencyCode         string
+	CurrentBillingSystem string
+	CustomerID           string
+	IsIBMer              bool
+	Linkages             []models.AccountLinkage
+	Name                 string
+	OfferTemplate        string
+	Onboarded            int
+	OrganizationsRegion  []models.OrganizationsRegion
+	Origin               string
+	Owner                string
+	OwnerIAMID           string
+	OwnerUniqueID        string
+	OwnerUserID          string
+	State                string
+	SubscriptionID       string
+	Tags                 []interface{}
+	TeamDirectoryEnabled bool
+	TermsAndConditions   models.TermsAndConditions
+	Type                 string
+	CreatedAt            time.Time
+	GUID                 string
+	UpdateComments       string
+	UpdatedAt            time.Time
+	UpdatedBy            string
+	URL                  string
+}
+
 //// LIST FUNCTION
 
 func listAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
@@ -44,7 +79,7 @@ func listAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 		return nil, err
 	}
 
-	svc, err := accountv2.New(conn)
+	svc, err := accountv1.New(conn)
 	if err != nil {
 		plugin.Logger(ctx).Error("ibm_account.listAccount", "connection_error", err)
 		return nil, err
@@ -63,7 +98,39 @@ func listAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 		plugin.Logger(ctx).Error("ibm_account.listAccount", "query_error", err)
 		return nil, err
 	}
-	d.StreamListItem(ctx, *data)
+
+	d.StreamListItem(ctx, &AccountInfo{
+		BillingCountryCode:   data.Entity.BillingCountryCode,
+		BluemixSubscriptions: data.Entity.BluemixSubscriptions,
+		ConfigurationID:      data.Entity.ConfigurationID,
+		CountryCode:          data.Entity.CountryCode,
+		CurrencyCode:         data.Entity.CurrencyCode,
+		CurrentBillingSystem: data.Entity.CurrentBillingSystem,
+		CustomerID:           data.Entity.CustomerID,
+		IsIBMer:              data.Entity.IsIBMer,
+		Linkages:             data.Entity.Linkages,
+		Name:                 data.Entity.Name,
+		OfferTemplate:        data.Entity.OfferTemplate,
+		Onboarded:            data.Entity.Onboarded,
+		OrganizationsRegion:  data.Entity.OrganizationsRegion,
+		Origin:               data.Entity.Origin,
+		Owner:                data.Entity.Owner,
+		OwnerIAMID:           data.Entity.OwnerIAMID,
+		OwnerUniqueID:        data.Entity.OwnerUniqueID,
+		OwnerUserID:          data.Entity.OwnerUserID,
+		State:                data.Entity.State,
+		SubscriptionID:       data.Entity.SubscriptionID,
+		Tags:                 data.Entity.Tags,
+		TeamDirectoryEnabled: data.Entity.TeamDirectoryEnabled,
+		TermsAndConditions:   data.Entity.TermsAndConditions,
+		Type:                 data.Entity.Type,
+		CreatedAt:            data.Metadata.CreatedAt,
+		GUID:                 data.Metadata.GUID,
+		UpdateComments:       data.Metadata.UpdateComments,
+		UpdatedAt:            data.Metadata.UpdatedAt,
+		UpdatedBy:            data.Metadata.UpdatedBy,
+		URL:                  data.Metadata.URL,
+	})
 
 	return nil, nil
 }
