@@ -88,7 +88,7 @@ func connect(ctx context.Context, d *plugin.QueryData) (*session.Session, error)
 	return conn, nil
 }
 
-//UserConfig ...
+// UserConfig ...
 type UserConfig struct {
 	userID      string
 	userEmail   string
