@@ -232,24 +232,6 @@ func ensureTimestamp(ctx context.Context, d *transform.TransformData) (interface
 	return t.String(), nil
 }
 
-func crnToAccountID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	if d.Value == nil {
-		return "", nil
-	}
-	crn := types.ToString(d.Value)
-	crnParts := strings.Split(crn, ":")
-	accountIDPart := crnParts[6]
-	if accountIDPart == "" {
-		return "", nil
-	}
-	aParts := strings.Split(accountIDPart, "/")
-	accountID := aParts[1]
-	if accountID == "" {
-		return "", nil
-	}
-	return accountID, nil
-}
-
 func handleNilString(_ context.Context, d *transform.TransformData) (interface{}, error) {
 	value := types.SafeString(d.Value)
 	if value == "" {
