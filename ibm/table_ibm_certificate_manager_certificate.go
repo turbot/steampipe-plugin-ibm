@@ -14,8 +14,8 @@ import (
 
 func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:          "ibm_certificate_manager_certificate",
-		Description:   "Retrieve the details of an existing certificate instance resource and lists all the certificates.",
+		Name:              "ibm_certificate_manager_certificate",
+		Description:       "Retrieve the details of an existing certificate instance resource and lists all the certificates.",
 		GetMatrixItemFunc: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listCertificate,
@@ -26,7 +26,7 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 				},
 			},
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The ID of the certificate that is managed in certificate manager."},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The display name of the certificate."},
 			{Name: "description", Type: proto.ColumnType_STRING, Description: "The description of the certificate."},
@@ -46,11 +46,10 @@ func tableIbmCertificateManagerCertificate(ctx context.Context) *plugin.Table {
 			{Name: "key_algorithm", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the account ID."},
 			{Name: "order_policy_name", Type: proto.ColumnType_STRING, Description: "The order policy name of the certificate.", Transform: transform.FromField("OrderPolicy.Name")},
 			// Standard columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("ID").Transform(crnToAccountID), Description: "The account ID of this certificate."},
 			{Name: "region", Type: proto.ColumnType_STRING, Description: "The region of this certificate.", Hydrate: plugin.HydrateFunc(getRegion)},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("ID").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
-		},
+		}),
 	}
 }
 

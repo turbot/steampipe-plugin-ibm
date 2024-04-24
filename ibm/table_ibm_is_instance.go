@@ -14,8 +14,8 @@ import (
 
 func tableIbmIsInstance(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:          "ibm_is_instance",
-		Description:   "A VPC is a virtual network that belongs to an account and provides logical isolation from other networks.",
+		Name:              "ibm_is_instance",
+		Description:       "A VPC is a virtual network that belongs to an account and provides logical isolation from other networks.",
 		GetMatrixItemFunc: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listIsInstance,
@@ -30,7 +30,7 @@ func tableIbmIsInstance(ctx context.Context) *plugin.Table {
 			Hydrate:    getIsInstance,
 			KeyColumns: plugin.SingleColumn("id"),
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The unique identifier for this virtual server instance."},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The user-defined name for this virtual server instance (and default system hostname)."},
@@ -56,12 +56,11 @@ func tableIbmIsInstance(ctx context.Context) *plugin.Table {
 			{Name: "zone", Type: proto.ColumnType_JSON, Description: "The zone this virtual server instance resides in."},
 
 			// Standard columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this instance."},
 			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this instance."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("CRN").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Hydrate: getInstanceTags, Transform: transform.FromValue(), Description: resourceInterfaceDescription("tags")},
-		},
+		}),
 	}
 }
 

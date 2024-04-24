@@ -9,7 +9,6 @@ import (
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -21,7 +20,7 @@ func tableIbmAccount(ctx context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAccount,
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "Specifies the name of the account."},
 			{Name: "guid", Type: proto.ColumnType_STRING, Description: "An unique ID of the account."},
 			{Name: "type", Type: proto.ColumnType_STRING, Description: "The type of the account."},
@@ -34,8 +33,7 @@ func tableIbmAccount(ctx context.Context) *plugin.Table {
 			{Name: "owner_user_id", Type: proto.ColumnType_STRING, Description: "The owner user ID used for login."},
 			{Name: "organizations", Type: proto.ColumnType_JSON, Description: "A list of organizations the account is associated."},
 			{Name: "members", Type: proto.ColumnType_JSON, Description: "A list of members associated with this account."},
-			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: getAccountId, Transform: transform.FromValue(), Description: "The ID fof the account."},
-		},
+		}),
 	}
 }
 

@@ -26,7 +26,7 @@ func tableIbmIsInstanceDisk(ctx context.Context) *plugin.Table {
 			Hydrate:    getIsInstanceDisk,
 			KeyColumns: plugin.AllColumns([]string{"id", "instance_id"}),
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The unique identifier of the instance disk."},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The user defined name for this disk."},
@@ -38,10 +38,9 @@ func tableIbmIsInstanceDisk(ctx context.Context) *plugin.Table {
 			{Name: "resource_type", Type: proto.ColumnType_STRING, Description: "The resource type."},
 			{Name: "size", Type: proto.ColumnType_INT, Description: "The size of the disk in GB (gigabytes)."},
 			// Standard columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: getAccountId, Transform: transform.FromValue(), Description: "The account ID of this instance disk."},
 			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this instance disk."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
-		},
+		}),
 	}
 }
 

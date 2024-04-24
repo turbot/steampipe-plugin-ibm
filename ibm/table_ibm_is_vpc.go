@@ -16,8 +16,8 @@ import (
 
 func tableIbmIsVpc(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:          "ibm_is_vpc",
-		Description:   "A VPC is a virtual network that belongs to an account and provides logical isolation from other networks.",
+		Name:              "ibm_is_vpc",
+		Description:       "A VPC is a virtual network that belongs to an account and provides logical isolation from other networks.",
 		GetMatrixItemFunc: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listIsVpc,
@@ -33,7 +33,7 @@ func tableIbmIsVpc(ctx context.Context) *plugin.Table {
 			Hydrate:    getIsVpc,
 			KeyColumns: plugin.SingleColumn("id"),
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The unique identifier for this VPC."},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The unique user-defined name for this VPC."},
@@ -50,12 +50,11 @@ func tableIbmIsVpc(ctx context.Context) *plugin.Table {
 			{Name: "resource_group", Type: proto.ColumnType_JSON, Description: "The resource group for this VPC."},
 			{Name: "status", Type: proto.ColumnType_STRING, Description: "The status of this VPC."},
 			// Standard columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this VPC."},
 			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this VPC."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("CRN").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Hydrate: getTags, Transform: transform.FromValue(), Description: resourceInterfaceDescription("tags")},
-		},
+		}),
 	}
 }
 

@@ -31,7 +31,7 @@ func tableIbmResourceGroup(ctx context.Context) *plugin.Table {
 				},
 			},
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "An alpha-numeric value identifying the resource group."},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The human-readable name of the resource group."},
@@ -48,11 +48,10 @@ func tableIbmResourceGroup(ctx context.Context) *plugin.Table {
 			{Name: "resource_linkages", Type: proto.ColumnType_STRING, Transform: transform.FromField("ResourceLinkages"), Description: "An array of the resources that linked to the resource group."},
 
 			// Standard columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("AccountID"), Description: "An alpha-numeric value identifying the account ID."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("CRN").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Hydrate: getResourceGroupTags, Transform: transform.FromValue(), Description: resourceInterfaceDescription("tags")},
-		},
+		}),
 	}
 }
 

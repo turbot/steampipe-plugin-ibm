@@ -22,7 +22,7 @@ func tableIbmIamAccessGroupPolicy(ctx context.Context) *plugin.Table {
 			Hydrate:       listGroupAccessPolicy,
 			ParentHydrate: listAccessGroup,
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The ID of the IAM user policy."},
 			{Name: "group_id", Type: proto.ColumnType_STRING, Description: "The ID of the IAM access group."},
 			{Name: "type", Type: proto.ColumnType_STRING, Description: "The policy type."},
@@ -35,8 +35,7 @@ func tableIbmIamAccessGroupPolicy(ctx context.Context) *plugin.Table {
 			{Name: "resources", Type: proto.ColumnType_JSON, Description: "The resources associated with a policy."},
 			{Name: "subjects", Type: proto.ColumnType_JSON, Description: "The subjects associated with a policy."},
 			{Name: "roles", Type: proto.ColumnType_JSON, Description: "A set of role cloud resource names (CRNs) granted by the policy."},
-			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "ID of the account that this policy belongs to.", Hydrate: getAccountId, Transform: transform.FromValue()},
-		},
+		}),
 	}
 }
 

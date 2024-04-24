@@ -10,6 +10,12 @@ import (
 func Plugin(ctx context.Context) *plugin.Plugin {
 	p := &plugin.Plugin{
 		Name: "steampipe-plugin-ibm",
+		ConnectionKeyColumns: []plugin.ConnectionKeyColumn{
+			{
+				Name:    "account_id",
+				Hydrate: getAccountId,
+			},
+		},
 		ConnectionConfigSchema: &plugin.ConnectionConfigSchema{
 			NewInstance: ConfigInstance,
 		},

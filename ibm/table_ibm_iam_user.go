@@ -21,7 +21,7 @@ func tableIbmIamUser(ctx context.Context) *plugin.Table {
 			Hydrate:    getIamUser,
 			KeyColumns: plugin.SingleColumn("id"),
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the user profile."},
 			{Name: "iam_id", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the user's IAM ID."},
 			{Name: "user_id", Type: proto.ColumnType_STRING, Description: "The user ID used for login."},
@@ -33,9 +33,8 @@ func tableIbmIamUser(ctx context.Context) *plugin.Table {
 			{Name: "phonenumber", Type: proto.ColumnType_STRING, Description: "The phone number of the user."},
 			{Name: "alt_phonenumber", Type: proto.ColumnType_STRING, Description: "The alternative phone number of the user.", Transform: transform.FromField("Altphonenumber")},
 			{Name: "photo", Type: proto.ColumnType_STRING, Description: "A link to a photo of the user."},
-			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the account ID."},
 			{Name: "settings", Type: proto.ColumnType_JSON, Hydrate: getIamUserSettings, Transform: transform.FromValue(), Description: "User settings."},
-		},
+		}),
 	}
 }
 

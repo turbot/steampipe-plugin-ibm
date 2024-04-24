@@ -14,8 +14,8 @@ import (
 
 func tableIbmIsVolume(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:          "ibm_is_volume",
-		Description:   "VPC block storage volume.",
+		Name:              "ibm_is_volume",
+		Description:       "VPC block storage volume.",
 		GetMatrixItemFunc: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listIsVolumes,
@@ -30,7 +30,7 @@ func tableIbmIsVolume(ctx context.Context) *plugin.Table {
 			Hydrate:    getIsVolume,
 			KeyColumns: plugin.SingleColumn("id"),
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The unique identifier for this volume."},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The user-defined name for this volume."},
@@ -50,12 +50,11 @@ func tableIbmIsVolume(ctx context.Context) *plugin.Table {
 			{Name: "zone", Type: proto.ColumnType_JSON, Description: "The zone this volume resides in."},
 
 			// Standard columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this volume."},
 			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this volume."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("CRN").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Hydrate: getVolumeTags, Transform: transform.FromValue(), Description: resourceInterfaceDescription("tags")},
-		},
+		}),
 	}
 }
 

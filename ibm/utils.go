@@ -17,6 +17,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/turbot/go-kit/types"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/memoize"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -255,4 +256,16 @@ func handleNilString(_ context.Context, d *transform.TransformData) (interface{}
 		return "false", nil
 	}
 	return value, nil
+}
+
+func commonColumns(columns []*plugin.Column) []*plugin.Column {
+	return append([]*plugin.Column{
+		{
+			Name:        "account_id",
+			Type:        proto.ColumnType_STRING,
+			Hydrate:     getAccountId,
+			Transform:   transform.FromValue(),
+			Description: "The ID fof the account.",
+		},
+	}, columns...)
 }

@@ -20,7 +20,7 @@ func tableCosBucket(ctx context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listBucket,
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "Name of the bucket."},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date when the bucket was created."},
 			{Name: "sse_kp_customer_root_key_crn", Type: proto.ColumnType_STRING, Description: "The root key used by Key Protect to encrypt this bucket. This value must be the full CRN of the root key.", Hydrate: headBucket, Transform: transform.FromField("IBMSSEKPCrkId")},
@@ -36,7 +36,7 @@ func tableCosBucket(ctx context.Context) *plugin.Table {
 			// Standard columns
 			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.FromField("LocationConstraint"), Description: "The region of the bucket."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
-		},
+		}),
 	}
 }
 
