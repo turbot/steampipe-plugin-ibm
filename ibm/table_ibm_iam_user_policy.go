@@ -35,7 +35,7 @@ func tableIbmIamUserPolicy(ctx context.Context) *plugin.Table {
 			{Name: "resources", Type: proto.ColumnType_JSON, Description: "The resources associated with a policy."},
 			{Name: "subjects", Type: proto.ColumnType_JSON, Description: "The subjects associated with a policy."},
 			{Name: "roles", Type: proto.ColumnType_JSON, Description: "A set of role cloud resource names (CRNs) granted by the policy."},
-			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "ID of the account that this policy belongs to.", Hydrate: plugin.HydrateFunc(getAccountId).WithCache(), Transform: transform.FromValue()},
+			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "ID of the account that this policy belongs to.", Hydrate: getAccountId, Transform: transform.FromValue()},
 		},
 	}
 }
@@ -59,8 +59,7 @@ func listUserPolicy(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateD
 	userData := h.Item.(usermanagementv2.UserInfo)
 
 	// Get account details
-	getAccountIdCached := plugin.HydrateFunc(getAccountId).WithCache()
-	accountID, err := getAccountIdCached(ctx, d, h)
+	accountID, err := getAccountId(ctx, d, h)
 	if err != nil {
 		return nil, err
 	}

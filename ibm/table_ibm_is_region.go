@@ -30,7 +30,7 @@ func tableIbmIsRegion(ctx context.Context) *plugin.Table {
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The unique user-defined name for this region."},
 			{Name: "status", Type: proto.ColumnType_STRING, Description: "The status of this region."},
 			// Standard columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getAccountId).WithCache(), Transform: transform.FromValue(), Description: "The account ID of this region."},
+			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: getAccountId, Transform: transform.FromValue(), Description: "The account ID of this region."},
 			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: "The region of this region."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			// TODO - should be in crn: format?

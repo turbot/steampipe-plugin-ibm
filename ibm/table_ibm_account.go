@@ -9,6 +9,7 @@ import (
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -33,6 +34,7 @@ func tableIbmAccount(ctx context.Context) *plugin.Table {
 			{Name: "owner_user_id", Type: proto.ColumnType_STRING, Description: "The owner user ID used for login."},
 			{Name: "organizations", Type: proto.ColumnType_JSON, Description: "A list of organizations the account is associated."},
 			{Name: "members", Type: proto.ColumnType_JSON, Description: "A list of members associated with this account."},
+			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: getAccountId, Transform: transform.FromValue(), Description: "The ID fof the account."},
 		},
 	}
 }
@@ -87,8 +89,7 @@ func listAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 
 	client := svc.Accounts()
 
-	getAccountIdCached := plugin.HydrateFunc(getAccountId).WithCache()
-	accountID, err := getAccountIdCached(ctx, d, h)
+	accountID, err := getAccountId(ctx, d, h)
 	if err != nil {
 		return nil, err
 	}

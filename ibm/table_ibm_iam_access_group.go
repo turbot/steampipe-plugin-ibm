@@ -33,7 +33,7 @@ func tableIbmIamAccessGroup(ctx context.Context) *plugin.Table {
 			{Name: "created_by_id", Type: proto.ColumnType_STRING, Description: "The iam_id of the entity that created the group."},
 			{Name: "last_modified_at", Type: proto.ColumnType_TIMESTAMP, Description: "Specifies the date and time, the group las modified.", Transform: transform.FromField("LastModifiedAt").Transform(ensureTimestamp)},
 			{Name: "href", Type: proto.ColumnType_STRING, Description: "An url to the given group resource."},
-			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "ID of the account that this group belongs to.", Hydrate: plugin.HydrateFunc(getAccountId).WithCache(), Transform: transform.FromValue()},
+			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "ID of the account that this group belongs to.", Hydrate: getAccountId, Transform: transform.FromValue()},
 		},
 	}
 }
@@ -49,8 +49,7 @@ func listAccessGroup(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	}
 
 	// Get account details
-	getAccountIdCached := plugin.HydrateFunc(getAccountId).WithCache()
-	accountID, err := getAccountIdCached(ctx, d, h)
+	accountID, err := getAccountId(ctx, d, h)
 	if err != nil {
 		return nil, err
 	}
