@@ -20,8 +20,7 @@ func tableIbmAccountSettings(ctx context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: getAccountSettings,
 		},
-		Columns: []*plugin.Column{
-			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "An unique ID of the account."},
+		Columns: commonColumns([]*plugin.Column{
 			{Name: "restrict_create_service_id", Type: proto.ColumnType_STRING, Description: ""},
 			{Name: "restrict_create_platform_api_key", Type: proto.ColumnType_STRING, Transform: transform.FromField("RestrictCreatePlatformApikey"), Description: "Indicates whether creating a platform API key is access controlled, or not."},
 			{Name: "allowed_ip_addresses", Type: proto.ColumnType_STRING, Description: "The IP addresses and subnets from which IAM tokens can be created for the account."},
@@ -30,7 +29,7 @@ func tableIbmAccountSettings(ctx context.Context) *plugin.Table {
 			{Name: "session_expiration_in_seconds", Type: proto.ColumnType_STRING, Description: "Defines the session expiration in seconds for the account."},
 			{Name: "session_invalidation_in_seconds", Type: proto.ColumnType_STRING, Description: "Defines the period of time in seconds in which a session will be invalidated due  to inactivity."},
 			{Name: "history", Type: proto.ColumnType_JSON, Description: "History of the Account Settings."},
-		},
+		}),
 	}
 }
 

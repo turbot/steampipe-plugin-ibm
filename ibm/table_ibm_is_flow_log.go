@@ -30,7 +30,7 @@ func tableIbmIsFlowLog(ctx context.Context) *plugin.Table {
 			Hydrate:    getIsFlowLog,
 			KeyColumns: plugin.SingleColumn("id"),
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The unique identifier for this flow log collector."},
@@ -49,12 +49,11 @@ func tableIbmIsFlowLog(ctx context.Context) *plugin.Table {
 			{Name: "vpc", Type: proto.ColumnType_JSON, Description: "The VPC this flow log collector is associated with.", Transform: transform.FromField("VPC")},
 
 			// Standard columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this flow log collector."},
 			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this flow log collector."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("CRN").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Hydrate: getFlowLogTags, Transform: transform.FromValue(), Description: resourceInterfaceDescription("tags")},
-		},
+		}),
 	}
 }
 

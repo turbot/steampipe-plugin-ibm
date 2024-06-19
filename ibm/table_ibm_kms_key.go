@@ -14,8 +14,8 @@ import (
 
 func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:          "ibm_kms_key",
-		Description:   "A key is a named object containing one or more key versions, along with metadata for the key.",
+		Name:              "ibm_kms_key",
+		Description:       "A key is a named object containing one or more key versions, along with metadata for the key.",
 		GetMatrixItemFunc: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listKmsKeys,
@@ -34,7 +34,7 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 			Hydrate:    getKmsKey,
 			KeyColumns: plugin.SingleColumn("id"),
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "A human-readable name assigned to your key for convenience."},
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "An unique identifier of the key."},
 			{Name: "crn", Type: proto.ColumnType_STRING, Description: "The Cloud Resource Name (CRN) that uniquely identifies your cloud resources.", Transform: transform.FromField("CRN")},
@@ -63,12 +63,11 @@ func tableIbmKmsKey(ctx context.Context) *plugin.Table {
 			{Name: "rotation_policy", Type: proto.ColumnType_JSON, Description: "Key rotation policy.", Hydrate: getKmsKeyRotationPolicy, Transform: transform.FromValue()},
 
 			// Standard columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this key."},
 			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this key."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("CRN").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Description: resourceInterfaceDescription("tags")},
-		},
+		}),
 	}
 }
 

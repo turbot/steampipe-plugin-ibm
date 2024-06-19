@@ -12,8 +12,8 @@ import (
 
 func tableIbmKmsKeyRing(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:          "ibm_kms_key_ring",
-		Description:   "A key ring is a collection of leys in an IBM cloud location.",
+		Name:              "ibm_kms_key_ring",
+		Description:       "A key ring is a collection of leys in an IBM cloud location.",
 		GetMatrixItemFunc: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listKmsKeyRings,
@@ -24,17 +24,16 @@ func tableIbmKmsKeyRing(ctx context.Context) *plugin.Table {
 				},
 			},
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "An unique identifier of the key ring."},
 			{Name: "instance_id", Type: proto.ColumnType_STRING, Description: "The key protect instance GUID.", Hydrate: plugin.HydrateFunc(getServiceInstanceID)},
 			{Name: "creation_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date and time when the key ring was created."},
 			{Name: "created_by", Type: proto.ColumnType_STRING, Description: "The creator of the key ring."},
 
 			// Standard columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getAccountId).WithCache(), Transform: transform.FromValue(), Description: "The account ID of this key ring."},
 			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this key ring."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("ID"), Description: resourceInterfaceDescription("title")},
-		},
+		}),
 	}
 }
 

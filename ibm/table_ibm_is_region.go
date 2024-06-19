@@ -23,20 +23,19 @@ func tableIbmIsRegion(ctx context.Context) *plugin.Table {
 			Hydrate:    getIsRegion,
 			KeyColumns: plugin.SingleColumn("name"),
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			// Top columns
 			{Name: "endpoint", Type: proto.ColumnType_STRING, Description: "The API endpoint for this region."},
 			{Name: "href", Type: proto.ColumnType_STRING, Description: "The URL for this region."},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The unique user-defined name for this region."},
 			{Name: "status", Type: proto.ColumnType_STRING, Description: "The status of this region."},
 			// Standard columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getAccountId).WithCache(), Transform: transform.FromValue(), Description: "The account ID of this region."},
 			{Name: "region", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: "The region of this region."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			// TODO - should be in crn: format?
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Endpoint").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Transform: transform.FromConstant(map[string]string{}), Description: resourceInterfaceDescription("tags")},
-		},
+		}),
 	}
 }
 

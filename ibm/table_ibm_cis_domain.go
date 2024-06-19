@@ -26,13 +26,12 @@ func tableIbmCISDomain(ctx context.Context) *plugin.Table {
 			Hydrate:    getCISDomain,
 			KeyColumns: plugin.SingleColumn("id"),
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The zone id."},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The zone name."},
 
 			// Other columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Hydrate: getAccountId, Description: "An unique ID of the account.", Transform: transform.FromValue()},
 			{Name: "created_on", Type: proto.ColumnType_TIMESTAMP, Description: "The date and time that the zone was created."},
 			{Name: "modified_on", Type: proto.ColumnType_TIMESTAMP, Description: "The date and time that the zone was updated."},
 			{Name: "minimum_tls_version", Type: proto.ColumnType_STRING, Hydrate: getTlsMinimumVersion, Description: "The tls version of the zone.", Transform: transform.FromField("Value")},
@@ -49,7 +48,7 @@ func tableIbmCISDomain(ctx context.Context) *plugin.Table {
 			// Standard columns
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("ID").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
-		},
+		}),
 	}
 }
 

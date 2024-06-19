@@ -20,7 +20,7 @@ func tableIbmIamRole(ctx context.Context) *plugin.Table {
 			Hydrate:    getIamRole,
 			KeyColumns: plugin.SingleColumn("id"),
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The role ID."},
 			{Name: "crn", Type: proto.ColumnType_STRING, Description: "The Cloud Resource Name (CRN) that uniquely identifies your cloud resources."},
 			{Name: "created_at", Type: proto.ColumnType_TIMESTAMP, Description: "The timestamp when the role was created."},
@@ -29,11 +29,10 @@ func tableIbmIamRole(ctx context.Context) *plugin.Table {
 			{Name: "last_modified_by_id", Type: proto.ColumnType_STRING, Description: "The IAM ID of the entity that last modified the policy."},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The name of the role that is used in the CRN."},
 			{Name: "service_name", Type: proto.ColumnType_STRING, Description: "The service name."},
-			{Name: "account_id", Type: proto.ColumnType_STRING, Description: "An alphanumeric value identifying the account ID."},
 			{Name: "display_name", Type: proto.ColumnType_STRING, Description: "The display name of the role that is shown in the console."},
 			{Name: "description", Type: proto.ColumnType_STRING, Description: "The description of the role."},
 			{Name: "actions", Type: proto.ColumnType_JSON, Description: "The actions of the role."},
-		},
+		}),
 	}
 }
 

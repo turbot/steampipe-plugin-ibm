@@ -14,8 +14,8 @@ import (
 
 func tableIbmIsNetworkAcl(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:          "ibm_is_network_acl",
-		Description:   "Network ACL is an optional layer of security for your VPC that acts as a firewall for controlling traffic in and out of one or more subnets.",
+		Name:              "ibm_is_network_acl",
+		Description:       "Network ACL is an optional layer of security for your VPC that acts as a firewall for controlling traffic in and out of one or more subnets.",
 		GetMatrixItemFunc: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate: listIsNetworkAcl,
@@ -24,7 +24,7 @@ func tableIbmIsNetworkAcl(ctx context.Context) *plugin.Table {
 			Hydrate:    getIsNetworkAcl,
 			KeyColumns: plugin.SingleColumn("id"),
 		},
-		Columns: []*plugin.Column{
+		Columns: commonColumns([]*plugin.Column{
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_STRING, Description: "The unique identifier for this network ACL"},
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The user-defined name for this network ACL."},
@@ -37,12 +37,11 @@ func tableIbmIsNetworkAcl(ctx context.Context) *plugin.Table {
 			{Name: "subnets", Type: proto.ColumnType_JSON, Description: "The subnets to which this network ACL is attached."},
 			{Name: "vpc", Type: proto.ColumnType_JSON, Transform: transform.FromField("VPC"), Description: "he VPC this network ACL is a part of."},
 			// Standard columns
-			{Name: "account_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("CRN").Transform(crnToAccountID), Description: "The account ID of this subnet."},
 			{Name: "region", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getRegion), Description: "The region of this subnet."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Name"), Description: resourceInterfaceDescription("title")},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("CRN").Transform(ensureStringArray), Description: resourceInterfaceDescription("akas")},
 			{Name: "tags", Type: proto.ColumnType_JSON, Hydrate: getNetworkAclTags, Transform: transform.FromValue(), Description: resourceInterfaceDescription("tags")},
-		},
+		}),
 	}
 }
 

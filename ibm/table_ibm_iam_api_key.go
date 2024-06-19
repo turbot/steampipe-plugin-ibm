@@ -20,7 +20,6 @@ func iamAPIKeyColumns() []*plugin.Column {
 		{Name: "created_at", Type: proto.ColumnType_TIMESTAMP, Description: "Specifies the date and time, the API key is created.", Transform: transform.FromField("CreatedAt").Transform(ensureTimestamp)},
 		{Name: "description", Type: proto.ColumnType_STRING, Description: "The description of the API key."},
 		{Name: "entity_tag", Type: proto.ColumnType_STRING, Description: "Version of the API Key details object."},
-		{Name: "account_id", Type: proto.ColumnType_STRING, Description: "ID of the account that this API key authenticates for."},
 		{Name: "modified_at", Type: proto.ColumnType_TIMESTAMP, Description: "Specifies the date and time, the API key las modified.", Transform: transform.FromField("ModifiedAt").Transform(ensureTimestamp)},
 		{Name: "api_key", Type: proto.ColumnType_STRING, Description: "The API key value. This property only contains the API key value for the following cases: create an API key, update a service ID API key that stores the API key value as retrievable, or get a service ID API key that stores the API key value as retrievable.", Transform: transform.FromField("Apikey")},
 		{Name: "history", Type: proto.ColumnType_JSON, Description: "History of the API key."},
@@ -36,7 +35,7 @@ func tableIbmIamAPIKey(ctx context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listAPIKey,
 		},
-		Columns: iamAPIKeyColumns(),
+		Columns: commonColumns(iamAPIKeyColumns()),
 	}
 }
 

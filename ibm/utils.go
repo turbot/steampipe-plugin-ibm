@@ -17,6 +17,8 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/turbot/go-kit/types"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/memoize"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
@@ -144,8 +146,27 @@ func authenticateAPIKey(sess *session.Session) error {
 	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
 }
 
+// if the caching is required other than per connection, build a cache key for the call and use it in Memoize
+// since getAccountId is a call, caching should be per connection
+var getAccountIdMemoize = plugin.HydrateFunc(getAccountIdUncached).Memoize(memoize.WithCacheKeyFunction(getAccountIdCacheKey))
+
+func getAccountId(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	accountId, err := getAccountIdMemoize(ctx, d, h)
+	if err != nil {
+		return nil, err
+	}
+
+	return accountId, nil
+}
+
+// Build a cache key for the call to getAccountId.
+func getAccountIdCacheKey(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	cacheKey := "IBMAccountId"
+	return cacheKey, nil
+}
+
 // Get current user account
-func getAccountId(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func getAccountIdUncached(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	cacheKey := "IBMAccountId"
 
 	// if found in cache, return the result
@@ -211,28 +232,22 @@ func ensureTimestamp(ctx context.Context, d *transform.TransformData) (interface
 	return t.String(), nil
 }
 
-func crnToAccountID(ctx context.Context, d *transform.TransformData) (interface{}, error) {
-	if d.Value == nil {
-		return "", nil
-	}
-	crn := types.ToString(d.Value)
-	crnParts := strings.Split(crn, ":")
-	accountIDPart := crnParts[6]
-	if accountIDPart == "" {
-		return "", nil
-	}
-	aParts := strings.Split(accountIDPart, "/")
-	accountID := aParts[1]
-	if accountID == "" {
-		return "", nil
-	}
-	return accountID, nil
-}
-
 func handleNilString(_ context.Context, d *transform.TransformData) (interface{}, error) {
 	value := types.SafeString(d.Value)
 	if value == "" {
 		return "false", nil
 	}
 	return value, nil
+}
+
+func commonColumns(columns []*plugin.Column) []*plugin.Column {
+	return append([]*plugin.Column{
+		{
+			Name:        "account_id",
+			Type:        proto.ColumnType_STRING,
+			Hydrate:     getAccountId,
+			Transform:   transform.FromValue(),
+			Description: "The ID fof the account.",
+		},
+	}, columns...)
 }

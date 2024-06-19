@@ -17,7 +17,7 @@ func tableIbmIamMyAPIKey(ctx context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listMyAPIKey,
 		},
-		Columns: iamAPIKeyColumns(),
+		Columns: commonColumns(iamAPIKeyColumns()),
 	}
 }
 
