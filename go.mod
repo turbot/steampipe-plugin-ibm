@@ -1,8 +1,8 @@
 module github.com/turbot/steampipe-plugin-ibm
 
-go 1.21.0
+go 1.22.4
 
-toolchain go1.21.1
+toolchain go1.22.6
 
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20240422054904-91d058acc7cc
@@ -16,7 +16,7 @@ require (
 	github.com/go-openapi/strfmt v0.21.7
 	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/turbot/go-kit v0.10.0-rc.0
-	github.com/turbot/steampipe-plugin-sdk/v5 v5.10.1
+	github.com/turbot/steampipe-plugin-sdk/v5 v5.10.3
 )
 
 require (
