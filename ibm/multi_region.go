@@ -4,9 +4,9 @@ import (
 	"context"
 	"os"
 	"path"
+	"slices"
 	"strings"
 
-	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
@@ -85,7 +85,7 @@ func BuildRegionList(_ context.Context, d *plugin.QueryData) []map[string]interf
 func getInvalidRegions(regions []string) []string {
 	invalidRegions := []string{}
 	for _, region := range regions {
-		if !helpers.StringSliceContains(Regions(), region) {
+		if !slices.Contains(Regions(), region) {
 			invalidRegions = append(invalidRegions, region)
 		}
 	}
@@ -143,7 +143,7 @@ func GetDefaultIBMRegion(d *plugin.QueryData) string {
 		}
 
 		// https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs#region
-		if !helpers.StringSliceContains(allIBMRegions, region) {
+		if !slices.Contains(allIBMRegions, region) {
 			regions = []string{"us-south"}
 		}
 	}
@@ -168,7 +168,7 @@ func GetDefaultIBMRegion(d *plugin.QueryData) string {
 		panic("\nconnection config have invalid \"regions\": " + strings.Join(invalidPatterns, ", ") + ". Edit your connection configuration file and then restart Steampipe")
 	}
 
-	if !helpers.StringSliceContains(allIBMRegions, region) {
+	if !slices.Contains(allIBMRegions, region) {
 		region = "us-south"
 	}
 
