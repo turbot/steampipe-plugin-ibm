@@ -7,7 +7,7 @@ require (
 	github.com/IBM/go-sdk-core/v4 v4.10.0
 	github.com/IBM/go-sdk-core/v5 v5.7.0
 	github.com/IBM/ibm-cos-sdk-go v1.7.0
-	github.com/IBM/keyprotect-go-client v0.7.0
+	github.com/IBM/keyprotect-go-client v0.15.1
 	github.com/IBM/networking-go-sdk v0.23.1
 	github.com/IBM/platform-services-go-sdk v0.18.0
 	github.com/IBM/vpc-go-sdk v1.0.1
@@ -63,7 +63,7 @@ require (
 	github.com/hashicorp/go-getter v1.7.9 // indirect
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
 	github.com/hashicorp/go-plugin v1.6.1 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.20.1 // indirect
