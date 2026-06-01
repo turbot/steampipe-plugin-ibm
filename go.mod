@@ -12,7 +12,7 @@ require (
 	github.com/IBM/platform-services-go-sdk v0.18.0
 	github.com/IBM/vpc-go-sdk v1.0.1
 	github.com/go-openapi/strfmt v0.21.7
-	github.com/golang-jwt/jwt/v4 v4.1.0
+	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/turbot/go-kit v1.1.0
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.14.0
 )
