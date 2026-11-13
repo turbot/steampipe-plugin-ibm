@@ -21,7 +21,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
 )
 
 // kmsService return the service for IBM KMS service
@@ -30,7 +30,7 @@ func kmsService(ctx context.Context, d *plugin.QueryData) (*kp.Client, error) {
 
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_kms"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*kp.Client), nil
 	}
 
@@ -50,7 +50,7 @@ func kmsService(ctx context.Context, d *plugin.QueryData) (*kp.Client, error) {
 		return nil, err
 	}
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 	return service, nil
 }
 
@@ -65,7 +65,7 @@ func vpcService(ctx context.Context, d *plugin.QueryData, region string) (*vpcv1
 
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := endpoint
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*vpcv1.VpcV1), nil
 	}
 
@@ -87,7 +87,7 @@ func vpcService(ctx context.Context, d *plugin.QueryData, region string) (*vpcv1
 	}
 
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 
 	return service, nil
 }
@@ -99,7 +99,7 @@ func cisZoneService(ctx context.Context, d *plugin.QueryData) (*zonesv1.ZonesV1,
 
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "cisZone"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*zonesv1.ZonesV1), nil
 	}
 
@@ -121,7 +121,7 @@ func cisZoneService(ctx context.Context, d *plugin.QueryData) (*zonesv1.ZonesV1,
 	}
 
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 
 	return service, nil
 }
@@ -133,7 +133,7 @@ func cisZoneSettingService(ctx context.Context, d *plugin.QueryData, zoneId stri
 
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "cisZoneSetting"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*zonessettingsv1.ZonesSettingsV1), nil
 	}
 
@@ -157,7 +157,7 @@ func cisZoneSettingService(ctx context.Context, d *plugin.QueryData, zoneId stri
 	}
 
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 
 	return service, nil
 }
@@ -169,7 +169,7 @@ func cisGlobalLoadBalancerService(ctx context.Context, d *plugin.QueryData, zone
 
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "cisGlobalLoadBalancer"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*globalloadbalancerv1.GlobalLoadBalancerV1), nil
 	}
 
@@ -192,7 +192,7 @@ func cisGlobalLoadBalancerService(ctx context.Context, d *plugin.QueryData, zone
 	}
 
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 
 	return service, nil
 }
@@ -204,7 +204,7 @@ func cisDnsRecordService(ctx context.Context, d *plugin.QueryData, zoneId string
 
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "cisDnsRecord"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*dnsrecordsv1.DnsRecordsV1), nil
 	}
 
@@ -227,7 +227,7 @@ func cisDnsRecordService(ctx context.Context, d *plugin.QueryData, zoneId string
 	}
 
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 
 	return service, nil
 }
@@ -235,7 +235,7 @@ func cisDnsRecordService(ctx context.Context, d *plugin.QueryData, zoneId string
 func iamService(ctx context.Context, d *plugin.QueryData) (*iamidentityv1.IamIdentityV1, error) {
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_iam"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*iamidentityv1.IamIdentityV1), nil
 	}
 	apiKey, err := configApiKey(ctx, d)
@@ -251,14 +251,14 @@ func iamService(ctx context.Context, d *plugin.QueryData) (*iamidentityv1.IamIde
 		return nil, err
 	}
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 	return service, nil
 }
 
 func iamAccessGroupService(ctx context.Context, d *plugin.QueryData) (*iamaccessgroupsv2.IamAccessGroupsV2, error) {
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_access_group"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*iamaccessgroupsv2.IamAccessGroupsV2), nil
 	}
 	apiKey, err := configApiKey(ctx, d)
@@ -273,14 +273,14 @@ func iamAccessGroupService(ctx context.Context, d *plugin.QueryData) (*iamaccess
 		return nil, err
 	}
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 	return service, nil
 }
 
 func iamPolicyManagementService(ctx context.Context, d *plugin.QueryData) (*iampolicymanagementv1.IamPolicyManagementV1, error) {
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_user_policy"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*iampolicymanagementv1.IamPolicyManagementV1), nil
 	}
 	apiKey, err := configApiKey(ctx, d)
@@ -295,14 +295,14 @@ func iamPolicyManagementService(ctx context.Context, d *plugin.QueryData) (*iamp
 		return nil, err
 	}
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 	return service, nil
 }
 
 func tagService(ctx context.Context, d *plugin.QueryData) (*globaltaggingv1.GlobalTaggingV1, error) {
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_global_tagging"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*globaltaggingv1.GlobalTaggingV1), nil
 	}
 	apiKey, err := configApiKey(ctx, d)
@@ -319,14 +319,14 @@ func tagService(ctx context.Context, d *plugin.QueryData) (*globaltaggingv1.Glob
 		return nil, err
 	}
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 	return service, nil
 }
 
 func resourceControllerService(ctx context.Context, d *plugin.QueryData) (*resourcecontrollerv2.ResourceControllerV2, error) {
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_resource_controller"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*resourcecontrollerv2.ResourceControllerV2), nil
 	}
 	apiKey, err := configApiKey(ctx, d)
@@ -343,14 +343,14 @@ func resourceControllerService(ctx context.Context, d *plugin.QueryData) (*resou
 		return nil, err
 	}
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 	return service, nil
 }
 
 func resourceManagerService(ctx context.Context, d *plugin.QueryData) (*resourcemanagerv2.ResourceManagerV2, error) {
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_resource_manager"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*resourcemanagerv2.ResourceManagerV2), nil
 	}
 	apiKey, err := configApiKey(ctx, d)
@@ -367,7 +367,7 @@ func resourceManagerService(ctx context.Context, d *plugin.QueryData) (*resource
 		return nil, err
 	}
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 	return service, nil
 }
 
@@ -376,7 +376,7 @@ func cosService(ctx context.Context, d *plugin.QueryData, region string) (*s3.S3
 	serviceInstanceID := d.EqualsQualString("instance_crn")
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm_cos" + region
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*s3.S3), nil
 	}
 	apiKey, err := configApiKey(ctx, d)
@@ -397,6 +397,6 @@ func cosService(ctx context.Context, d *plugin.QueryData, region string) (*s3.S3
 	service := s3.New(sess, conf)
 
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, service)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, service)
 	return service, nil
 }

@@ -1,7 +1,7 @@
 package ibm
 
 import (
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
 )
 
 type ibmConfig struct {
@@ -15,9 +15,9 @@ func ConfigInstance() interface{} {
 
 // GetConfig :: retrieve and cast connection config from query data
 func GetConfig(connection *plugin.Connection) ibmConfig {
-	if connection == nil || connection.Config == nil {
+	if connection == nil || connection.GetConfig() == nil {
 		return ibmConfig{}
 	}
-	config, _ := connection.Config.(ibmConfig)
+	config, _ := connection.GetConfig().(ibmConfig)
 	return config
 }

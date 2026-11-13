@@ -17,16 +17,16 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/turbot/go-kit/types"
-	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/memoize"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v6/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v6/memoize"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin/transform"
 )
 
-func configApiKey(_ context.Context, d *plugin.QueryData) (string, error) {
+func configApiKey(ctx context.Context, d *plugin.QueryData) (string, error) {
 	// Load API key from cache
 	cacheKey := "ibm_api_key"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(string), nil
 	}
 
@@ -49,7 +49,7 @@ func configApiKey(_ context.Context, d *plugin.QueryData) (string, error) {
 	}
 	if apiKey != "" {
 		// Save to cache
-		d.ConnectionManager.Cache.Set(cacheKey, apiKey)
+		_ = d.ConnectionCache.Set(ctx, cacheKey, apiKey)
 
 		return apiKey, nil
 	}
@@ -61,7 +61,7 @@ func configApiKey(_ context.Context, d *plugin.QueryData) (string, error) {
 func connect(ctx context.Context, d *plugin.QueryData) (*session.Session, error) {
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "ibm"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(*session.Session), nil
 	}
 
@@ -85,7 +85,7 @@ func connect(ctx context.Context, d *plugin.QueryData) (*session.Session, error)
 	}
 
 	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, conn)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, conn)
 
 	return conn, nil
 }
@@ -170,7 +170,7 @@ func getAccountIdUncached(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	cacheKey := "IBMAccountId"
 
 	// if found in cache, return the result
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.(string), nil
 	}
 
@@ -187,7 +187,7 @@ func getAccountIdUncached(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 
 	// save to extension cache
-	d.ConnectionManager.Cache.Set(cacheKey, userInfo.userAccount)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, userInfo.userAccount)
 
 	return userInfo.userAccount, nil
 }

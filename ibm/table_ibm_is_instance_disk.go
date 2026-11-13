@@ -6,17 +6,17 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 
-	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v6/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin/transform"
 )
 
 //// TABLE DEFINITION
 
 func tableIbmIsInstanceDisk(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:          "ibm_is_instance_disk",
-		Description:   "A VPC is a virtual network that belongs to an account and provides logical isolation from other networks.",
+		Name:              "ibm_is_instance_disk",
+		Description:       "A VPC is a virtual network that belongs to an account and provides logical isolation from other networks.",
 		GetMatrixItemFunc: BuildRegionList,
 		List: &plugin.ListConfig{
 			Hydrate:       listIsInstanceDisk,

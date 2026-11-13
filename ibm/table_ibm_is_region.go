@@ -5,9 +5,9 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 
-	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v6/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -42,7 +42,7 @@ func tableIbmIsRegion(ctx context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listIsRegion(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	region := GetDefaultIBMRegion(d)
+	region := GetDefaultIBMRegion(ctx, d)
 
 	// Create service connection
 	conn, err := vpcService(ctx, d, region)
@@ -74,7 +74,7 @@ func listIsRegion(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 //// HYDRATE FUNCTIONS
 
 func getIsRegion(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	region := GetDefaultIBMRegion(d)
+	region := GetDefaultIBMRegion(ctx, d)
 
 	// Create service connection
 	conn, err := vpcService(ctx, d, region)
