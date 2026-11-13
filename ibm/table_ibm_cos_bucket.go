@@ -5,17 +5,17 @@ import (
 	"strings"
 
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
-	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v6/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin/transform"
 )
 
 //// TABLE DEFINITION
 
 func tableCosBucket(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:          "ibm_cos_bucket",
-		Description:   "An IBM Cloud storage bucket.",
+		Name:              "ibm_cos_bucket",
+		Description:       "An IBM Cloud storage bucket.",
 		GetMatrixItemFunc: BuildServiceInstanceList,
 		List: &plugin.ListConfig{
 			Hydrate: listBucket,
@@ -43,7 +43,7 @@ func tableCosBucket(ctx context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listBucket(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	region := GetDefaultIBMRegion(d)
+	region := GetDefaultIBMRegion(ctx, d)
 	plugin.Logger(ctx).Trace("listBucket")
 
 	serviceType := d.EqualsQualString("service_type")

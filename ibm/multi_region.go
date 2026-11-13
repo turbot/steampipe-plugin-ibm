@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
 )
 
 // Regions is the current known list of valid regions
@@ -26,11 +26,11 @@ func Regions() []string {
 }
 
 // BuildRegionList :: return a list of matrix items, one per region specified in the connection config
-func BuildRegionList(_ context.Context, d *plugin.QueryData) []map[string]interface{} {
+func BuildRegionList(ctx context.Context, d *plugin.QueryData) []map[string]interface{} {
 
 	// cache matrix
 	cacheKey := "RegionListMatrix"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.([]map[string]interface{})
 	}
 
@@ -64,19 +64,19 @@ func BuildRegionList(_ context.Context, d *plugin.QueryData) []map[string]interf
 		}
 
 		// set cache
-		d.ConnectionManager.Cache.Set(cacheKey, matrix)
+		_ = d.ConnectionCache.Set(ctx, cacheKey, matrix)
 
 		return matrix
 	}
 
 	// Search for region configured using env, or use default region (i.e. us-south)
-	defaultIBMRegion := GetDefaultIBMRegion(d)
+	defaultIBMRegion := GetDefaultIBMRegion(ctx, d)
 	matrix := []map[string]interface{}{
 		{"region": defaultIBMRegion},
 	}
 
 	// set cache
-	d.ConnectionManager.Cache.Set(cacheKey, matrix)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, matrix)
 
 	return matrix
 }
@@ -112,10 +112,10 @@ func getServiceInstanceCRN(ctx context.Context, d *plugin.QueryData, h *plugin.H
 
 // GetDefaultIBMRegion returns the default region for IBM account
 // if not set by Env variable
-func GetDefaultIBMRegion(d *plugin.QueryData) string {
+func GetDefaultIBMRegion(ctx context.Context, d *plugin.QueryData) string {
 	// have we already created and cached the service?
 	serviceCacheKey := "GetDefaultIBMRegion"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(serviceCacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, serviceCacheKey); ok {
 		return cachedData.(string)
 	}
 	allIBMRegions := Regions()
@@ -172,7 +172,7 @@ func GetDefaultIBMRegion(d *plugin.QueryData) string {
 		region = "us-south"
 	}
 
-	d.ConnectionManager.Cache.Set(serviceCacheKey, region)
+	_ = d.ConnectionCache.Set(ctx, serviceCacheKey, region)
 	return region
 }
 

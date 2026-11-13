@@ -6,7 +6,7 @@ import (
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
 )
 
 // BuildServiceInstanceList :: return a list of matrix items, one per service instance
@@ -14,7 +14,7 @@ func BuildServiceInstanceList(ctx context.Context, d *plugin.QueryData) []map[st
 	// cache service instance region matrix
 	cacheKey := "ServiceInstanceList"
 
-	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, cacheKey); ok {
 		return cachedData.([]map[string]interface{})
 	}
 
@@ -36,7 +36,7 @@ func BuildServiceInstanceList(ctx context.Context, d *plugin.QueryData) []map[st
 	}
 
 	// set ServiceInstanceList cache
-	d.ConnectionManager.Cache.Set(cacheKey, matrix)
+	_ = d.ConnectionCache.Set(ctx, cacheKey, matrix)
 
 	return matrix
 }
@@ -50,7 +50,7 @@ func listAllServiceInstances(ctx context.Context, d *plugin.QueryData, connectio
 	}
 
 	serviceCacheKey := "listAllServiceInstances"
-	if cachedData, ok := d.ConnectionManager.Cache.Get(serviceCacheKey); ok {
+	if cachedData, ok := d.ConnectionCache.Get(ctx, serviceCacheKey); ok {
 		return cachedData.([]*string), nil
 	}
 
@@ -71,7 +71,7 @@ func listAllServiceInstances(ctx context.Context, d *plugin.QueryData, connectio
 	}
 
 	// save service instances in cache
-	d.ConnectionManager.Cache.Set(serviceCacheKey, serviceInstanceCRNs)
+	_ = d.ConnectionCache.Set(ctx, serviceCacheKey, serviceInstanceCRNs)
 
 	return serviceInstanceCRNs, err
 }

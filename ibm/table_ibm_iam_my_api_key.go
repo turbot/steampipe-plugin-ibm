@@ -5,7 +5,7 @@ import (
 
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
 )
 
 //// TABLE DEFINITION
